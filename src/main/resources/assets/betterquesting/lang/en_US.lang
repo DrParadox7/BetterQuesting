@@ -19,6 +19,7 @@ betterquesting.title.select_theme=Select Theme
 betterquesting.title.importers=Importers
 betterquesting.title.submit_station=Submit Station
 
+
 betterquesting.btn.rewards=Rewards
 betterquesting.btn.tasks=Tasks
 betterquesting.btn.advanced=Advanced
@@ -52,6 +53,7 @@ betterquesting.btn.icon=Icon
 betterquesting.btn.claim_all=Claim All
 betterquesting.btn.zoom_fit=Zoom to Fit
 betterquesting.btn.lock_tray=Lock Tray
+betterquesting.btn.showparentconnection=Parent line
 
 betterquesting.home.exit=Exit
 betterquesting.home.quests=Quests

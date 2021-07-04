@@ -63,4 +63,7 @@ public class NativeProps
 	
 	public static final IPropertyType<Integer> PACK_VER =					new PropertyTypeInteger(new ResourceLocation("betterquesting:pack_version"), 0);
 	public static final IPropertyType<String> PACK_NAME =					new PropertyTypeString(new ResourceLocation("betterquesting:pack_name"), "");
+
+	public static final IPropertyType<Boolean> SHOW_PARENT_CONNECTION =     new PropertyTypeBoolean(new ResourceLocation("betterquesting:show_parent_connection"), true);
+
 }

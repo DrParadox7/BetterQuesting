@@ -74,6 +74,8 @@ public class QuestInstance implements IQuest
 		setupValue(NativeProps.GLOBAL_SHARE, false);
 		setupValue(NativeProps.SIMULTANEOUS, false);
 		setupValue(NativeProps.VISIBILITY, EnumQuestVisibility.NORMAL);
+
+		setupValue(NativeProps.SHOW_PARENT_CONNECTION);
 	}
 
 	private <T> void setupValue(IPropertyType<T> prop)
@@ -280,7 +282,12 @@ public class QuestInstance implements IQuest
         }
 	}
 
-	@Override
+    @Override
+    public boolean showParentConnection() {
+        return qInfo.getProperty(NativeProps.SHOW_PARENT_CONNECTION);
+    }
+
+    @Override
 	public boolean isUnlocked(UUID uuid)
 	{
 		if(preRequisites.length <= 0) return true;

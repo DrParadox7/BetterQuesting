@@ -120,7 +120,9 @@ public class CanvasQuestLine extends CanvasScrolling
         for(Entry<Integer, PanelButtonQuest> entry : questBtns.entrySet())
         {
             DBEntry<IQuest> quest = entry.getValue().getStoredValue();
-            
+
+
+            //list of required quests to unlock this one, aka parent quests
             List<DBEntry<IQuest>> reqList = QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(quest.getValue().getRequirements());
             
             if(reqList.size() <= 0) continue;
@@ -153,15 +155,15 @@ public class CanvasQuestLine extends CanvasScrolling
                     txLineCol = PresetColor.QUEST_LINE_REPEATABLE.getColor();
                     break;
             }
-            
-            for(DBEntry<IQuest> req : reqList)
-            {
-                PanelButtonQuest parBtn = questBtns.get(req.getID());
-                
-                if(parBtn != null)
-                {
-                    PanelLine prLine = new PanelLine(parBtn.getTransform(), entry.getValue().getTransform(), lineRender, main? 8 : 4, txLineCol, 1);
-                    this.addPanel(prLine);
+
+            if(quest.getValue().showParentConnection()) {
+                for (DBEntry<IQuest> req : reqList) {
+                    PanelButtonQuest parBtn = questBtns.get(req.getID());
+
+                    if (parBtn != null) {
+                        PanelLine prLine = new PanelLine(parBtn.getTransform(), entry.getValue().getTransform(), lineRender, main ? 8 : 4, txLineCol, 1);
+                        this.addPanel(prLine);
+                    }
                 }
             }
         }
