@@ -31,6 +31,8 @@ public interface IQuest extends INBTSaveLoad<NBTTagCompound>, INBTProgress<NBTTa
 	
 	boolean isUnlocked(UUID uuid);
 	boolean canSubmit(EntityPlayer player);
+
+	boolean showParentConnection();
 	
 	boolean isComplete(UUID uuid);
 	void setComplete(UUID uuid, long timeStamp);

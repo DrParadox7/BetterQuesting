@@ -43,6 +43,7 @@ public class GuiQuestEditor extends GuiScreenCanvas implements IPEventListener, 
     
     private PanelButton btnLogic;
     private PanelButton btnVis;
+    private PanelButton btnShowParent;
     
     public GuiQuestEditor(GuiScreen parent, int questID)
     {
@@ -65,6 +66,7 @@ public class GuiQuestEditor extends GuiScreenCanvas implements IPEventListener, 
             if(!flDesc.isFocused()) flDesc.setText(quest.getProperty(NativeProps.DESC));
             btnLogic.setText(QuestTranslation.translate("betterquesting.btn.logic") + ": " + quest.getProperty(NativeProps.LOGIC_QUEST));
             btnVis.setText(QuestTranslation.translate("betterquesting.btn.show") + ": " + quest.getProperty(NativeProps.VISIBILITY));
+            btnShowParent.setText(QuestTranslation.translate("betterquesting.btn.showparentconnection") + ": " + quest.getProperty(NativeProps.SHOW_PARENT_CONNECTION));
         }
     }
     
@@ -136,8 +138,11 @@ public class GuiQuestEditor extends GuiScreenCanvas implements IPEventListener, 
         btnLogic = new PanelButton(new GuiTransform(GuiAlign.MID_CENTER, 0, 48, 100, 16, 0), 6, QuestTranslation.translate("betterquesting.btn.logic") + ": " + quest.getProperty(NativeProps.LOGIC_QUEST));
         cvBackground.addPanel(btnLogic);
         
-        PanelButton btnAdv = new PanelButton(new GuiTransform(GuiAlign.MID_CENTER, -100, 64, 200, 16, 0), 4, QuestTranslation.translate("betterquesting.btn.advanced"));
+        PanelButton btnAdv = new PanelButton(new GuiTransform(GuiAlign.MID_CENTER, -100, 64, 100, 16, 0), 4, QuestTranslation.translate("betterquesting.btn.advanced"));
         cvBackground.addPanel(btnAdv);
+
+        btnShowParent = new PanelButton(new GuiTransform(GuiAlign.MID_CENTER, 0, 64, 100, 16, 0), 9, QuestTranslation.translate("betterquesting.btn.showparentconnection") + ": " + quest.getProperty(NativeProps.SHOW_PARENT_CONNECTION));
+        cvBackground.addPanel(btnShowParent);
     }
     
     @Override
@@ -243,6 +248,14 @@ public class GuiQuestEditor extends GuiScreenCanvas implements IPEventListener, 
                     quest.setProperty(NativeProps.ICON, value);
                     SendChanges();
                 }));
+            }
+            case 9:
+            {
+                boolean currentState = quest.getProperty(NativeProps.SHOW_PARENT_CONNECTION);
+                quest.setProperty(NativeProps.SHOW_PARENT_CONNECTION, !currentState);
+                ((PanelButton)btn).setText(QuestTranslation.translate("betterquesting.btn.showparentconnection") + ": " + !currentState);
+                SendChanges();
+                break;
             }
         }
     }

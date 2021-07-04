@@ -20,6 +20,7 @@ betterquesting.title.importers=Importers
 betterquesting.title.submit_station=Submit Station
 betterquesting.title.completion=Completion: %d/%d
 
+
 betterquesting.btn.rewards=Rewards
 betterquesting.btn.tasks=Tasks
 betterquesting.btn.advanced=Advanced
@@ -59,6 +60,7 @@ betterquesting.btn.prereq_visbility.normal=Normal Visibility
 betterquesting.btn.prereq_visbility.implicit=Hidden unless hovering over or holding shift
 betterquesting.btn.prereq_visbility.hidden=Hidden regardless of user input
 betterquesting.btn.share_quest=Share to Chat
+betterquesting.btn.showparentconnection=Parent line
 
 betterquesting.home.exit=Exit
 betterquesting.home.quests=Quests

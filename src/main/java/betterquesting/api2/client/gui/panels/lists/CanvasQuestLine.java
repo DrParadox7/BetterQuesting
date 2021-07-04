@@ -125,7 +125,9 @@ public class CanvasQuestLine extends CanvasScrolling
         for(Entry<Integer, PanelButtonQuest> entry : questBtns.entrySet())
         {
             DBEntry<IQuest> quest = entry.getValue().getStoredValue();
-            
+
+
+            //list of required quests to unlock this one, aka parent quests
             List<DBEntry<IQuest>> reqList = QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(quest.getValue().getRequirements());
             
             if(reqList.size() <= 0) continue;
@@ -158,30 +160,15 @@ public class CanvasQuestLine extends CanvasScrolling
                     defaultTxLineCol = PresetColor.QUEST_LINE_REPEATABLE.getColor();
                     break;
             }
-            
-            for(DBEntry<IQuest> req : reqList)
-            {
-                PanelButtonQuest parBtn = questBtns.get(req.getID());
-                IGuiColor txLineCol = defaultTxLineCol;
-                
-                if(parBtn != null)
-                {
-                    RequirementType type = quest.getValue().getRequirementType(req.getID());
-                    ShouldDrawPredicate predicate = null;
-                    switch (type) {
-                        case NORMAL:
-                            break;
-                        case IMPLICIT:
-                            if (BQ_Settings.alwaysDrawImplicit)
-                                break;
-                            predicate = (mx, my, partialTicks) -> questBtns.get(req.getID()).rect.contains(mx, my) || questBtns.get(quest.getID()).rect.contains(mx, my) || Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
-                            txLineCol = new GuiColorPulse(txLineCol, PresetColor.QUEST_LINE_IMPLICIT_MIXIN.getColor(), 2F, 0F);
-                            break;
-                        default:
-                            // bail early
-                            continue;
+
+            if(quest.getValue().showParentConnection()) {
+                for(DBEntry<IQuest> req : reqList) {
+                    PanelButtonQuest parBtn = questBtns.get(req.getID());
+
+                    if (parBtn != null) {
+                        PanelLine prLine = new PanelLine(parBtn.getTransform(), entry.getValue().getTransform(), lineRender, main ? 8 : 4, txLineCol, 1);
+                        this.addPanel(prLine);
                     }
-                    this.addPanel(new PanelLine(parBtn.getTransform(), entry.getValue().getTransform(), lineRender, main ? 8 : 4, txLineCol, 1, predicate));
                 }
             }
         }
