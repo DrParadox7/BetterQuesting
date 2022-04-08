@@ -272,7 +272,7 @@ public class QuestCache implements IExtendedEntityProperties
             }
             
             // Previous quest is underway and this one is visible but still locked (foreshadowing)
-            for(DBEntry<IQuest> q : QuestDatabase.INSTANCE.bulkLookup(quest.getRequirements()))
+            for(DBEntry<IQuest> q : QuestDatabase.INSTANCE.bulkLookup(quest.getVisRequirements()))
             {
                 if(!q.getValue().isUnlocked(uuid))
                 {
@@ -286,12 +286,12 @@ public class QuestCache implements IExtendedEntityProperties
             return quest.isComplete(uuid);
         } else if(vis == EnumQuestVisibility.CHAIN)
         {
-            if(quest.getRequirements().length <= 0)
+            if(quest.getVisRequirements().length <= 0)
             {
                 return true;
             }
             
-            for(DBEntry<IQuest> q : QuestDatabase.INSTANCE.bulkLookup(quest.getRequirements()))
+            for(DBEntry<IQuest> q : QuestDatabase.INSTANCE.bulkLookup(quest.getVisRequirements()))
             {
                 if(q == null) return true;
                 

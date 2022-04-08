@@ -206,9 +206,14 @@ public class PanelScrollingNBT extends CanvasScrolling implements IPEventListene
                             break;
                         }
                     }
-                } else
+                }else if(entry.getId() == 11) { // bnt tag int array
+                    PanelTextField<String> text = new PanelTextField<>(new GuiRectangle(lw, i * 16, rw - 48, 16, 0), "int_array" + ((NBTTagIntArray) entry).toString(), FieldFilterString.INSTANCE);
+                    text.setMaxLength(Integer.MAX_VALUE);
+                    this.addPanel(text);
+
+            }else
                 {
-                    PanelTextBox err = new PanelTextBox(new GuiRectangle(lw, i * 16 + 4, rw - 48, 12, 0), entry.getClass().getSimpleName() + " Not Supported Yet").setAlignment(1);
+                    PanelTextBox err = new PanelTextBox(new GuiRectangle(lw, i * 16 + 4, rw - 48, 12, 0), entry.getClass().getSimpleName() + ":" + entry.getId() + " Not Supported Yet").setAlignment(1);
                     err.setColor(PresetColor.TEXT_MAIN.getColor());
                     this.addPanel(err);
                 }
@@ -320,7 +325,7 @@ public class PanelScrollingNBT extends CanvasScrolling implements IPEventListene
                     }
                 } else
                 {
-                    PanelTextBox err = new PanelTextBox(new GuiRectangle(lw, i * 16 + 4, rw - 48, 12, 0), entry.getClass().getSimpleName() + " Not Supported Yet").setAlignment(1);
+                    PanelTextBox err = new PanelTextBox(new GuiRectangle(lw, i * 16 + 4, rw - 48, 12, 0), entry.getClass().getSimpleName() + ":-:" + entry.getId()  + " Not Supported Yet").setAlignment(1);
                     err.setColor(PresetColor.TEXT_MAIN.getColor());
                     this.addPanel(err);
                 }

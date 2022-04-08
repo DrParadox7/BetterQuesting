@@ -30,6 +30,7 @@ public interface IQuest extends INBTSaveLoad<NBTTagCompound>, INBTProgress<NBTTa
 	void detect(EntityPlayer player);
 	
 	boolean isUnlocked(UUID uuid);
+	boolean isVisible(UUID uuid);
 	boolean canSubmit(EntityPlayer player);
 
 	boolean showParentConnection();
@@ -65,7 +66,6 @@ public interface IQuest extends INBTSaveLoad<NBTTagCompound>, INBTProgress<NBTTa
 
 	enum RequirementType {
 		NORMAL(PresetIcon.ICON_VISIBILITY_NORMAL),
-		IMPLICIT(PresetIcon.ICON_VISIBILITY_IMPLICIT),
 		HIDDEN(PresetIcon.ICON_VISIBILITY_HIDDEN);
 
 		private final PresetIcon icon;
@@ -98,4 +98,6 @@ public interface IQuest extends INBTSaveLoad<NBTTagCompound>, INBTProgress<NBTTa
 			return id >=0 && id < VALUES.length ? VALUES[id] : NORMAL;
 		}
 	}
+	int[] getVisRequirements();
+	void setVisRequirements(@Nonnull int[] req);
 }

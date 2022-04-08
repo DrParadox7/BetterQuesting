@@ -50,7 +50,7 @@ public class QuestInstance implements IQuest
 
 	private final HashMap<UUID, NBTTagCompound> completeUsers = new HashMap<>();
     private int[] preRequisites = new int[0];
-    private TIntObjectMap<RequirementType> prereqTypes = new TIntObjectHashMap<>();
+    private int[] visPreRequisites = new int[0];
 
 	private final PropertyContainer qInfo = new PropertyContainer();
 
@@ -72,6 +72,7 @@ public class QuestInstance implements IQuest
 
 		setupValue(NativeProps.LOGIC_QUEST, EnumLogic.AND);
 		setupValue(NativeProps.LOGIC_TASK, EnumLogic.AND);
+        setupValue(NativeProps.LOGIC_VISIBILITY, EnumLogic.AND);
 
 		setupValue(NativeProps.REPEAT_TIME, -1);
 		setupValue(NativeProps.REPEAT_REL, true);
@@ -315,6 +316,24 @@ public class QuestInstance implements IQuest
 		return qInfo.getProperty(NativeProps.LOGIC_QUEST).getResult(A, B);
 	}
 
+    @Override
+    public boolean isVisible(UUID uuid) {
+        if(visPreRequisites.length <= 0) return true;
+
+        int A = 0;
+        int B = preRequisites.length;
+
+        for(DBEntry<IQuest> quest : QuestDatabase.INSTANCE.bulkLookup(getVisRequirements()))
+        {
+            if(quest.getValue().isComplete(uuid))
+            {
+                A++;
+            }
+        }
+
+        return qInfo.getProperty(NativeProps.LOGIC_QUEST).getResult(A, B);
+    }
+
 	@Override
 	public void setComplete(UUID uuid, long timestamp)
     {
@@ -469,35 +488,28 @@ public class QuestInstance implements IQuest
         this.preRequisites = req;
     }
 
+
     @Nonnull
     @Override
-    public RequirementType getRequirementType(int req) {
-        RequirementType type = prereqTypes.get(req);
-        return type == null ? RequirementType.NORMAL : type;
+    public int[] getVisRequirements()
+    {
+        return this.visPreRequisites;
     }
 
-    @Override
-    public void setRequirementType(int req, @Nonnull RequirementType kind) {
-        if (kind == RequirementType.NORMAL)
-            prereqTypes.remove(req);
-        else
-            prereqTypes.put(req, kind);
+    public void setVisRequirements(@Nonnull int[] req)
+    {
+        this.visPreRequisites = req;
     }
 
-    @Override
+	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound jObj)
 	{
 		jObj.setTag("properties", qInfo.writeToNBT(new NBTTagCompound()));
 		jObj.setTag("tasks", tasks.writeToNBT(new NBTTagList(), null));
 		jObj.setTag("rewards", rewards.writeToNBT(new NBTTagList(), null));
 		jObj.setTag("preRequisites", new NBTTagIntArray(getRequirements()));
-        if (!prereqTypes.isEmpty()) {
-            byte[] types = new byte[preRequisites.length];
-            int[] req = this.preRequisites;
-            for (int i = 0, requirementsLength = req.length; i < requirementsLength; i++)
-                types[i] = getRequirementType(req[i]).id();
-            jObj.setTag("preRequisiteTypes", new NBTTagByteArray(types));
-        }
+		jObj.setTag("visPreRequisites", new NBTTagIntArray(getVisRequirements()));
+
 		return jObj;
 	}
 
@@ -507,10 +519,17 @@ public class QuestInstance implements IQuest
 		this.qInfo.readFromNBT(jObj.getCompoundTag("properties"));
 		this.tasks.readFromNBT(jObj.getTagList("tasks", 10), false);
 		this.rewards.readFromNBT(jObj.getTagList("rewards", 10), false);
+        boolean hasPreReqs = jObj.hasKey("visPreRequisites");
+        if(hasPreReqs){
+            this.visPreRequisites = jObj.getIntArray("visPreRequisites");
+        }
 
 		if(jObj.func_150299_b("preRequisites") == NBT.TAG_INT_ARRAY) // Native NBT
 		{
 		    setRequirements(jObj.getIntArray("preRequisites"));
+            if(!hasPreReqs){
+                this.visPreRequisites = jObj.getIntArray("preRequisites");
+            }
 		} else // Probably an NBTTagList
 		{
 			List<NBTBase> rList = NBTConverter.getTagList(jObj.getTagList("preRequisites", 4));
@@ -521,6 +540,9 @@ public class QuestInstance implements IQuest
 				req[i] = pTag instanceof NBTPrimitive ? ((NBTPrimitive)pTag).func_150287_d() : -1;
 			}
 			setRequirements(req);
+            if(!hasPreReqs){
+                this.visPreRequisites = req;
+            }
 		}
 
         if (jObj.func_150299_b("preRequisiteTypes") == NBT.TAG_BYTE_ARRAY) {
