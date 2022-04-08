@@ -148,9 +148,6 @@ public class GuiQuestEditor extends GuiScreenCanvas implements IPEventListener, 
         PanelButton btnVisReq = new PanelButton(new GuiTransform(GuiAlign.MID_CENTER, -100, 80, 100, 16, 0), 10, QuestTranslation.translate("betterquesting.btn.vis_requirements"));
         cvBackground.addPanel(btnVisReq);
 
-
-        btnVisLogic = new PanelButton(new GuiTransform(GuiAlign.MID_CENTER, 0, 80, 100, 16, 0), 11, QuestTranslation.translate("betterquesting.btn.vislogic") + ": " + quest.getProperty(NativeProps.LOGIC_VISIBILITY));
-        cvBackground.addPanel(btnVisLogic);
     }
     
     @Override
@@ -272,16 +269,7 @@ public class GuiQuestEditor extends GuiScreenCanvas implements IPEventListener, 
                 mc.displayGuiScreen(new betterquesting.client.gui2.editors.GuiVisibilityPrerequisiteEditor(this, quest));
                 break;
             }
-            case 11: // Vis Logic
-            {
-                EnumLogic[] logicList = EnumLogic.values();
-                EnumLogic logic = quest.getProperty(NativeProps.LOGIC_VISIBILITY);
-                logic = logicList[(logic.ordinal() + 1)%logicList.length];
-                quest.setProperty(NativeProps.LOGIC_VISIBILITY, logic);
-                ((PanelButton)btn).setText(QuestTranslation.translate("betterquesting.btn.vislogic") + ": " + logic);
-                SendChanges();
-                break;
-            }
+
 
         }
     }
