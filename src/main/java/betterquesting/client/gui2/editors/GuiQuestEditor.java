@@ -42,6 +42,7 @@ public class GuiQuestEditor extends GuiScreenCanvas implements IPEventListener, 
     private PanelTextField<String> flDesc;
     
     private PanelButton btnLogic;
+    private PanelButton btnVisLogic;
     private PanelButton btnVis;
     private PanelButton btnShowParent;
     
@@ -143,6 +144,13 @@ public class GuiQuestEditor extends GuiScreenCanvas implements IPEventListener, 
 
         btnShowParent = new PanelButton(new GuiTransform(GuiAlign.MID_CENTER, 0, 64, 100, 16, 0), 9, QuestTranslation.translate("betterquesting.btn.showparentconnection") + ": " + quest.getProperty(NativeProps.SHOW_PARENT_CONNECTION));
         cvBackground.addPanel(btnShowParent);
+
+        PanelButton btnVisReq = new PanelButton(new GuiTransform(GuiAlign.MID_CENTER, -100, 80, 100, 16, 0), 10, QuestTranslation.translate("betterquesting.btn.vis_requirements"));
+        cvBackground.addPanel(btnVisReq);
+
+
+        btnVisLogic = new PanelButton(new GuiTransform(GuiAlign.MID_CENTER, 0, 80, 100, 16, 0), 11, QuestTranslation.translate("betterquesting.btn.vislogic") + ": " + quest.getProperty(NativeProps.LOGIC_VISIBILITY));
+        cvBackground.addPanel(btnVisLogic);
     }
     
     @Override
@@ -249,6 +257,7 @@ public class GuiQuestEditor extends GuiScreenCanvas implements IPEventListener, 
                     SendChanges();
                 }));
             }
+            //case 9: parent visibility
             case 9:
             {
                 boolean currentState = quest.getProperty(NativeProps.SHOW_PARENT_CONNECTION);
@@ -257,6 +266,23 @@ public class GuiQuestEditor extends GuiScreenCanvas implements IPEventListener, 
                 SendChanges();
                 break;
             }
+
+            case 10:
+            {
+                mc.displayGuiScreen(new betterquesting.client.gui2.editors.GuiVisibilityPrerequisiteEditor(this, quest));
+                break;
+            }
+            case 11: // Vis Logic
+            {
+                EnumLogic[] logicList = EnumLogic.values();
+                EnumLogic logic = quest.getProperty(NativeProps.LOGIC_VISIBILITY);
+                logic = logicList[(logic.ordinal() + 1)%logicList.length];
+                quest.setProperty(NativeProps.LOGIC_VISIBILITY, logic);
+                ((PanelButton)btn).setText(QuestTranslation.translate("betterquesting.btn.vislogic") + ": " + logic);
+                SendChanges();
+                break;
+            }
+
         }
     }
     

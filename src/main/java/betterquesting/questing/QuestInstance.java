@@ -43,6 +43,7 @@ public class QuestInstance implements IQuest
 
 	private final HashMap<UUID, NBTTagCompound> completeUsers = new HashMap<>();
     private int[] preRequisites = new int[0];
+    private int[] visPreRequisites = new int[0];
 
 	private final PropertyContainer qInfo = new PropertyContainer();
 
@@ -64,6 +65,7 @@ public class QuestInstance implements IQuest
 
 		setupValue(NativeProps.LOGIC_QUEST, EnumLogic.AND);
 		setupValue(NativeProps.LOGIC_TASK, EnumLogic.AND);
+        setupValue(NativeProps.LOGIC_VISIBILITY, EnumLogic.AND);
 
 		setupValue(NativeProps.REPEAT_TIME, -1);
 		setupValue(NativeProps.REPEAT_REL, true);
@@ -306,6 +308,24 @@ public class QuestInstance implements IQuest
 		return qInfo.getProperty(NativeProps.LOGIC_QUEST).getResult(A, B);
 	}
 
+    @Override
+    public boolean isVisible(UUID uuid) {
+        if(visPreRequisites.length <= 0) return true;
+
+        int A = 0;
+        int B = preRequisites.length;
+
+        for(DBEntry<IQuest> quest : QuestDatabase.INSTANCE.bulkLookup(getVisRequirements()))
+        {
+            if(quest.getValue().isComplete(uuid))
+            {
+                A++;
+            }
+        }
+
+        return qInfo.getProperty(NativeProps.LOGIC_QUEST).getResult(A, B);
+    }
+
 	@Override
 	public void setComplete(UUID uuid, long timestamp)
     {
@@ -448,6 +468,19 @@ public class QuestInstance implements IQuest
         this.preRequisites = req;
     }
 
+
+    @Nonnull
+    @Override
+    public int[] getVisRequirements()
+    {
+        return this.visPreRequisites;
+    }
+
+    public void setVisRequirements(@Nonnull int[] req)
+    {
+        this.visPreRequisites = req;
+    }
+
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound jObj)
 	{
@@ -455,6 +488,7 @@ public class QuestInstance implements IQuest
 		jObj.setTag("tasks", tasks.writeToNBT(new NBTTagList(), null));
 		jObj.setTag("rewards", rewards.writeToNBT(new NBTTagList(), null));
 		jObj.setTag("preRequisites", new NBTTagIntArray(getRequirements()));
+		jObj.setTag("visPreRequisites", new NBTTagIntArray(getVisRequirements()));
 
 		return jObj;
 	}
@@ -465,10 +499,17 @@ public class QuestInstance implements IQuest
 		this.qInfo.readFromNBT(jObj.getCompoundTag("properties"));
 		this.tasks.readFromNBT(jObj.getTagList("tasks", 10), false);
 		this.rewards.readFromNBT(jObj.getTagList("rewards", 10), false);
+        boolean hasPreReqs = jObj.hasKey("visPreRequisites");
+        if(hasPreReqs){
+            this.visPreRequisites = jObj.getIntArray("visPreRequisites");
+        }
 
 		if(jObj.func_150299_b("preRequisites") == 11) // Native NBT
 		{
 		    setRequirements(jObj.getIntArray("preRequisites"));
+            if(!hasPreReqs){
+                this.visPreRequisites = jObj.getIntArray("preRequisites");
+            }
 		} else // Probably an NBTTagList
 		{
 			List<NBTBase> rList = NBTConverter.getTagList(jObj.getTagList("preRequisites", 4));
@@ -479,6 +520,9 @@ public class QuestInstance implements IQuest
 				req[i] = pTag instanceof NBTPrimitive ? ((NBTPrimitive)pTag).func_150287_d() : -1;
 			}
 			setRequirements(req);
+            if(!hasPreReqs){
+                this.visPreRequisites = req;
+            }
 		}
 
 		this.setupProps();

@@ -7,7 +7,6 @@ import betterquesting.api.questing.tasks.ITask;
 import betterquesting.api2.storage.IDatabaseNBT;
 import betterquesting.api2.storage.INBTProgress;
 import betterquesting.api2.storage.INBTSaveLoad;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -28,6 +27,7 @@ public interface IQuest extends INBTSaveLoad<NBTTagCompound>, INBTProgress<NBTTa
 	void detect(EntityPlayer player);
 	
 	boolean isUnlocked(UUID uuid);
+	boolean isVisible(UUID uuid);
 	boolean canSubmit(EntityPlayer player);
 
 	boolean showParentConnection();
@@ -56,4 +56,8 @@ public interface IQuest extends INBTSaveLoad<NBTTagCompound>, INBTProgress<NBTTa
 	@Nonnull
 	int[] getRequirements();
 	void setRequirements(@Nonnull int[] req);
+
+	@Nonnull
+	int[] getVisRequirements();
+	void setVisRequirements(@Nonnull int[] req);
 }

@@ -156,6 +156,20 @@ public class CanvasQuestLine extends CanvasScrolling
                     break;
             }
 
+            if(QuestingAPI.getAPI(ApiReference.SETTINGS).canUserEdit(player)){
+                List<DBEntry<IQuest>> visReqList = QuestingAPI.getAPI(ApiReference.QUEST_DB).bulkLookup(quest.getValue().getVisRequirements());
+                if(reqList.size() <= 0) continue;
+                for (DBEntry<IQuest> visReq : visReqList) {
+                    PanelButtonQuest parBtn = questBtns.get(visReq.getID());
+
+                    if (parBtn != null) {
+                        PanelLine prLine = new PanelLine(parBtn.getTransform(), entry.getValue().getTransform(), PresetLine.QUEST_LOCKED.getLine(), 10, PresetColor.QUEST_LINE_VIS.getColor(), 1);
+                        this.addPanel(prLine);
+                    }
+                }
+
+            }
+
             if(quest.getValue().showParentConnection()) {
                 for (DBEntry<IQuest> req : reqList) {
                     PanelButtonQuest parBtn = questBtns.get(req.getID());

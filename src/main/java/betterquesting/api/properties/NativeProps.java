@@ -33,7 +33,8 @@ public class NativeProps
 	public static final IPropertyType<EnumQuestVisibility> VISIBILITY =		new PropertyTypeEnum<>(new ResourceLocation("betterquesting:visibility"), EnumQuestVisibility.NORMAL);
 	public static final IPropertyType<EnumLogic> LOGIC_TASK =				new PropertyTypeEnum<>(new ResourceLocation("betterquesting:taskLogic"), EnumLogic.AND);
 	public static final IPropertyType<EnumLogic> LOGIC_QUEST =				new PropertyTypeEnum<>(new ResourceLocation("betterquesting:questLogic"), EnumLogic.AND);
-	
+	public static final IPropertyType<EnumLogic> LOGIC_VISIBILITY =		    new PropertyTypeEnum<>(new ResourceLocation("betterquesting:visLogic"), EnumLogic.AND);
+
 	public static final IPropertyType<Integer> REPEAT_TIME =				new PropertyTypeInteger(new ResourceLocation("betterquesting:repeatTime"), -1);
 	public static final IPropertyType<Boolean> REPEAT_REL =				    new PropertyTypeBoolean(new ResourceLocation("betterquesting:repeat_relative"), true);
 	
