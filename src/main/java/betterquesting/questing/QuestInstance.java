@@ -65,7 +65,6 @@ public class QuestInstance implements IQuest
 
 		setupValue(NativeProps.LOGIC_QUEST, EnumLogic.AND);
 		setupValue(NativeProps.LOGIC_TASK, EnumLogic.AND);
-        setupValue(NativeProps.LOGIC_VISIBILITY, EnumLogic.AND);
 
 		setupValue(NativeProps.REPEAT_TIME, -1);
 		setupValue(NativeProps.REPEAT_REL, true);
@@ -308,23 +307,6 @@ public class QuestInstance implements IQuest
 		return qInfo.getProperty(NativeProps.LOGIC_QUEST).getResult(A, B);
 	}
 
-    @Override
-    public boolean isVisible(UUID uuid) {
-        if(visPreRequisites.length <= 0) return true;
-
-        int A = 0;
-        int B = preRequisites.length;
-
-        for(DBEntry<IQuest> quest : QuestDatabase.INSTANCE.bulkLookup(getVisRequirements()))
-        {
-            if(quest.getValue().isComplete(uuid))
-            {
-                A++;
-            }
-        }
-
-        return qInfo.getProperty(NativeProps.LOGIC_QUEST).getResult(A, B);
-    }
 
 	@Override
 	public void setComplete(UUID uuid, long timestamp)
