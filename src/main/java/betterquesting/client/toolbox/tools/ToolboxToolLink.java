@@ -195,41 +195,74 @@ public class ToolboxToolLink implements IToolboxTool
     {
         return linking.size() <= 0;
     }
-    
+
     private boolean containsReq(IQuest quest, int id)
     {
         for(int reqID : quest.getRequirements()) if(id == reqID) return true;
         return false;
     }
-    
-    private boolean removeReq(IQuest quest, int id)
-    {
-        int[] orig = quest.getRequirements();
-        if(orig.length <= 0) return false;
-        boolean hasRemoved = false;
-        int[] rem = new int[orig.length - 1];
-        for(int i = 0; i < orig.length; i++)
-        {
-            if(!hasRemoved && orig[i] == id)
-            {
-                hasRemoved = true;
-                continue;
-            } else if(!hasRemoved && i >= rem.length) break;
-            
-            rem[!hasRemoved ? i : (i - 1)] = orig[i];
+
+    private boolean removeReq(IQuest quest, int id) {
+        int[] vis_orig = quest.getVisRequirements();
+        boolean hasVisRemoved = false;
+        if (vis_orig.length > 0) {
+            int[] visRem = new int[vis_orig.length - 1];
+            for (int i = 0; i < vis_orig.length; i++) {
+                if (!hasVisRemoved && vis_orig[i] == id) {
+                    hasVisRemoved = true;
+                    continue;
+                } else if (!hasVisRemoved && i >= visRem.length) break;
+
+                visRem[!hasVisRemoved ? i : (i - 1)] = vis_orig[i];
+            }
+
+            if (hasVisRemoved) quest.setVisRequirements(visRem);
         }
-        
-        if(hasRemoved) quest.setRequirements(rem);
-        return hasRemoved;
+
+        int[] orig = quest.getRequirements();
+        boolean hasRemoved = false;
+        if (orig.length > 0) {
+
+
+            int[] rem = new int[orig.length - 1];
+            for (int i = 0; i < orig.length; i++) {
+                if (!hasRemoved && orig[i] == id) {
+                    hasRemoved = true;
+                    continue;
+                } else if (!hasRemoved && i >= rem.length) break;
+
+                rem[!hasRemoved ? i : (i - 1)] = orig[i];
+            }
+
+            if (hasRemoved) quest.setRequirements(rem);
+
+        }
+        return hasRemoved || hasVisRemoved;
     }
-    
+
     private boolean addReq(IQuest quest, int id)
     {
-        if(containsReq(quest, id)) return false;
-        int[] orig = quest.getRequirements();
-        int[] added = Arrays.copyOf(orig, orig.length + 1);
-        added[orig.length] = id;
-        quest.setRequirements(added);
-        return true;
+
+        boolean hasVisAdded = false;
+        if(!containsVisReq(quest, id)){
+            int[] orig = quest.getVisRequirements();
+            int[] added = Arrays.copyOf(orig, orig.length + 1);
+            added[orig.length] = id;
+            quest.setVisRequirements(added);
+            hasVisAdded = true;
+        }
+        if(!containsReq(quest, id)){
+            int[] orig = quest.getRequirements();
+            int[] added = Arrays.copyOf(orig, orig.length + 1);
+            added[orig.length] = id;
+            quest.setRequirements(added);
+            return true;
+        }
+        return hasVisAdded;
+    }
+
+    private boolean containsVisReq(IQuest quest, int id) {
+        for(int reqID : quest.getVisRequirements()) if(id == reqID) return true;
+        return false;
     }
 }
