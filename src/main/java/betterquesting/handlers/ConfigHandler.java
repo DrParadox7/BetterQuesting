@@ -91,11 +91,6 @@ public class ConfigHandler {
                 "If true, user can view not-yet-unlocked quests that are not hidden or secret. This property can be changed by the GUI.");
         BQ_Settings.viewModeBtn = config.getBoolean(
                 "View mode button", Configuration.CATEGORY_GENERAL, false, "If true, show view mode button.");
-        BQ_Settings.alwaysDrawImplicit = config.getBoolean(
-                "Always draw implicit dependency",
-                Configuration.CATEGORY_GENERAL,
-                false,
-                "If true, always draw implicit dependency. This property can be changed by the GUI");
 
         config.save();
     }

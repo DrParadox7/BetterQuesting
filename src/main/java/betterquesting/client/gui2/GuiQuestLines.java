@@ -1,7 +1,5 @@
 package betterquesting.client.gui2;
 
-import static betterquesting.api.storage.BQ_Settings.alwaysDrawImplicit;
-
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.client.gui.misc.INeedsRefresh;
@@ -350,62 +348,6 @@ public class GuiQuestLines extends GuiScreenCanvas implements IPEventListener, I
         btnTrayLock.setTooltip(Collections.singletonList(QuestTranslation.translate("betterquesting.btn.lock_tray")));
         cvBackground.addPanel(btnTrayLock);
         yOff += 16;
-
-        // View Mode Button
-        if (BQ_Settings.viewModeBtn) {
-            PanelButton btnViewMode = new PanelButton(new GuiTransform(GuiAlign.TOP_LEFT, 8, yOff, 32, 16, -2), -1, "")
-                    .setIcon(
-                            viewMode
-                                    ? PresetIcon.ICON_VIEW_MODE_ON.getTexture()
-                                    : PresetIcon.ICON_VIEW_MODE_OFF.getTexture());
-            btnViewMode.setClickAction((b) -> {
-                viewMode = !viewMode;
-                b.setIcon(
-                        viewMode
-                                ? PresetIcon.ICON_VIEW_MODE_ON.getTexture()
-                                : PresetIcon.ICON_VIEW_MODE_OFF.getTexture());
-                ConfigHandler.config
-                        .get(Configuration.CATEGORY_GENERAL, "View mode", false)
-                        .set(viewMode);
-                ConfigHandler.config.save();
-                ConfigHandler.initConfigs();
-                refreshGui();
-            });
-            btnViewMode.setTooltip(
-                    Collections.singletonList(QuestTranslation.translate("betterquesting.btn.view_mode")));
-            cvBackground.addPanel(btnViewMode);
-            yOff += 16;
-        }
-
-        PanelButton btnViewMode = new PanelButton(new GuiTransform(GuiAlign.TOP_LEFT, 8, yOff, 32, 16, -2), -1, "")
-                .setIcon(
-                        alwaysDrawImplicit
-                                ? PresetIcon.ICON_VISIBILITY_IMPLICIT.getTexture()
-                                : PresetIcon.ICON_VISIBILITY_NORMAL.getTexture());
-        btnViewMode.setClickAction((b) -> {
-            alwaysDrawImplicit = !alwaysDrawImplicit;
-            b.setIcon(
-                    alwaysDrawImplicit
-                            ? PresetIcon.ICON_VISIBILITY_IMPLICIT.getTexture()
-                            : PresetIcon.ICON_VISIBILITY_NORMAL.getTexture());
-            ConfigHandler.config
-                    .get(
-                            Configuration.CATEGORY_GENERAL,
-                            "Always draw implicit dependency",
-                            false,
-                            "If true, always draw implicit dependency. This property can be changed by the GUI")
-                    .set(alwaysDrawImplicit);
-            ConfigHandler.config.save();
-            btnViewMode.setTooltip(Arrays.asList(
-                    QuestTranslation.translate("betterquesting.btn.always_draw_implicit"),
-                    QuestTranslation.translate("betterquesting.tooltip.cycle." + alwaysDrawImplicit)));
-            ConfigHandler.initConfigs();
-            refreshGui();
-        });
-        btnViewMode.setTooltip(Arrays.asList(
-                QuestTranslation.translate("betterquesting.btn.always_draw_implicit"),
-                QuestTranslation.translate("betterquesting.tooltip.cycle." + alwaysDrawImplicit)));
-        cvBackground.addPanel(btnViewMode);
 
         // === CHAPTER VIEWPORT ===
 
