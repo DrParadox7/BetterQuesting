@@ -29,26 +29,30 @@ import betterquesting.api2.storage.DBEntry;
 import betterquesting.api2.utils.QuestTranslation;
 import betterquesting.network.handlers.NetQuestAction;
 import betterquesting.questing.QuestDatabase;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import org.lwjgl.util.vector.Vector4f;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-public class GuiQuest extends GuiScreenCanvas implements IPEventListener, INeedsRefresh
-{
+public class GuiQuest extends GuiScreenCanvas implements IPEventListener, INeedsRefresh {
     /*
-     *  Map which contains scrolls positions. <questId, Pair<taskScroll, rewardScroll>>
+     *  Map which contains scrolls positions. <questId, Triple<taskScroll, rewardScroll, descScroll>>
      */
-    private static Map<Integer, ScrollPosition> scrollsPositions = new HashMap<>();
+    private static final Map<Integer, ScrollPosition> scrollsPositions = new HashMap<>();
     private ScrollPosition scrollPosition;
 
-    public static class ScrollPosition{
-        public ScrollPosition(int taskScrollY, int rewardScrollY) {
+    public static class ScrollPosition {
+        public ScrollPosition(int taskScrollY, int rewardScrollY, int descScrollY) {
             this.taskScrollY = taskScrollY;
             this.rewardScrollY = rewardScrollY;
+            this.descScrollY = descScrollY;
+        }
+
+        @Deprecated
+        public ScrollPosition(int taskScrollY, int rewardScrollY) {
+            this(taskScrollY, rewardScrollY, 0);
         }
 
         private int taskScrollY;
@@ -70,6 +74,16 @@ public class GuiQuest extends GuiScreenCanvas implements IPEventListener, INeeds
         public void setRewardScrollY(int rewardScrollY) {
             this.rewardScrollY = rewardScrollY;
         }
+
+        private int descScrollY;
+
+        public int getDescScrollY() {
+            return descScrollY;
+        }
+
+        public void setDescScrollY(int descScrollY) {
+            this.descScrollY = descScrollY;
+        }
     }
 
     private final int questID;
@@ -90,26 +104,25 @@ public class GuiQuest extends GuiScreenCanvas implements IPEventListener, INeeds
     private CanvasEmpty pnTask;
     private CanvasScrolling csTask;
 
-    public GuiQuest(GuiScreen parent, int questID)
-    {
+    private CanvasScrolling csDesc;
+
+    public GuiQuest(GuiScreen parent, int questID) {
         super(parent);
         this.questID = questID;
         scrollPosition = scrollsPositions.get(questID);
-        if (scrollPosition == null){
-            scrollPosition = new ScrollPosition(0, 0);
+        if (scrollPosition == null) {
+            scrollPosition = new ScrollPosition(0, 0, 0);
             scrollsPositions.put(questID, scrollPosition);
         }
     }
 
     @Override
-    public void initPanel()
-    {
+    public void initPanel() {
         super.initPanel();
 
         this.quest = QuestDatabase.INSTANCE.getValue(questID);
 
-        if(quest == null)
-        {
+        if (quest == null) {
             mc.displayGuiScreen(this.parent);
             return;
         }
@@ -117,39 +130,44 @@ public class GuiQuest extends GuiScreenCanvas implements IPEventListener, INeeds
         PEventBroadcaster.INSTANCE.register(this, PEventButton.class);
 
         // Background panel
-        CanvasTextured cvBackground = new CanvasTextured(new GuiTransform(GuiAlign.FULL_BOX, new GuiPadding(0, 0, 0, 0), 0), PresetTexture.PANEL_MAIN.getTexture());
+        CanvasTextured cvBackground = new CanvasTextured(
+                new GuiTransform(GuiAlign.FULL_BOX, new GuiPadding(0, 0, 0, 0), 0),
+                PresetTexture.PANEL_MAIN.getTexture());
         this.addPanel(cvBackground);
 
-        PanelTextBox panTxt = new PanelTextBox(new GuiTransform(GuiAlign.TOP_EDGE, new GuiPadding(0, 16, 0, -32), 0), QuestTranslation.translate(quest.getProperty(NativeProps.NAME))).setAlignment(1);
+        PanelTextBox panTxt = new PanelTextBox(
+                        new GuiTransform(GuiAlign.TOP_EDGE, new GuiPadding(0, 16, 0, -32), 0),
+                        QuestTranslation.translate(quest.getProperty(NativeProps.NAME)))
+                .setAlignment(1);
         panTxt.setColor(PresetColor.TEXT_HEADER.getColor());
         cvBackground.addPanel(panTxt);
 
-        if(QuestingAPI.getAPI(ApiReference.SETTINGS).canUserEdit(mc.thePlayer))
-        {
-            cvBackground.addPanel(new PanelButton(new GuiTransform(GuiAlign.BOTTOM_CENTER, -100, -16, 100, 16, 0), 0, QuestTranslation.translate("gui.back")));
-            cvBackground.addPanel(new PanelButton(new GuiTransform(GuiAlign.BOTTOM_CENTER, 0, -16, 100, 16, 0), 1, QuestTranslation.translate("betterquesting.btn.edit")));
-        } else
-        {
-            cvBackground.addPanel(new PanelButton(new GuiTransform(GuiAlign.BOTTOM_CENTER, -100, -16, 200, 16, 0), 0, QuestTranslation.translate("gui.back")));
+        if (QuestingAPI.getAPI(ApiReference.SETTINGS).canUserEdit(mc.thePlayer)) {
+            cvBackground.addPanel(new PanelButton(
+                    new GuiTransform(GuiAlign.BOTTOM_CENTER, -100, -16, 100, 16, 0),
+                    0,
+                    QuestTranslation.translate("gui.back")));
+            cvBackground.addPanel(new PanelButton(
+                    new GuiTransform(GuiAlign.BOTTOM_CENTER, 0, -16, 100, 16, 0),
+                    1,
+                    QuestTranslation.translate("betterquesting.btn.edit")));
+        } else {
+            cvBackground.addPanel(new PanelButton(
+                    new GuiTransform(GuiAlign.BOTTOM_CENTER, -100, -16, 200, 16, 0),
+                    0,
+                    QuestTranslation.translate("gui.back")));
         }
 
         cvInner = new CanvasEmpty(new GuiTransform(GuiAlign.FULL_BOX, new GuiPadding(16, 32, 16, 24), 0));
         cvBackground.addPanel(cvInner);
 
-        if(quest.getRewards().size() > 0)
-        {
-            CanvasScrolling cvDesc = new CanvasScrolling(new GuiTransform(new Vector4f(0F, 0F, 0.5F, 0.5F), new GuiPadding(0, 0, 16, 16), 0));
-            cvInner.addPanel(cvDesc);
-            PanelTextBox paDesc = new PanelTextBox(new GuiRectangle(0, 0, cvDesc.getTransform().getWidth(), 0), QuestTranslation.translate(quest.getProperty(NativeProps.DESC)), true);
-            paDesc.setColor(PresetColor.TEXT_MAIN.getColor());//.setFontSize(10);
-            cvDesc.addCulledPanel(paDesc, false);
+        if (quest.getRewards().size() > 0) {
+            refreshDescPanel(true);
 
-            PanelVScrollBar paDescScroll = new PanelVScrollBar(new GuiTransform(GuiAlign.quickAnchor(GuiAlign.TOP_CENTER, GuiAlign.MID_CENTER), new GuiPadding(-16, 0, 8, 16), 0));
-            cvInner.addPanel(paDescScroll);
-            cvDesc.setScrollDriverY(paDescScroll);
-            paDescScroll.setEnabled(cvDesc.getScrollBounds().getHeight() > 0);
-
-            btnClaim = new PanelButton(new GuiTransform(new Vector4f(0F, 1F, 0.5F, 1F), new GuiPadding(0, -16, 8, 0), 0), 6, QuestTranslation.translate("betterquesting.btn.claim"));
+            btnClaim = new PanelButton(
+                    new GuiTransform(new Vector4f(0F, 1F, 0.5F, 1F), new GuiPadding(0, -16, 8, 0), 0),
+                    6,
+                    QuestTranslation.translate("betterquesting.btn.claim"));
             btnClaim.setActive(false);
             cvInner.addPanel(btnClaim);
 
@@ -157,23 +175,16 @@ public class GuiQuest extends GuiScreenCanvas implements IPEventListener, INeeds
             rectReward.setParent(cvInner.getTransform());
 
             refreshRewardPanel();
-        } else
-        {
-            CanvasScrolling cvDesc = new CanvasScrolling(new GuiTransform(GuiAlign.HALF_LEFT, new GuiPadding(0, 0, 16, 0), 0));
-            cvInner.addPanel(cvDesc);
-            PanelTextBox paDesc = new PanelTextBox(new GuiRectangle(0, 0, cvDesc.getTransform().getWidth(), 0), QuestTranslation.translate(quest.getProperty(NativeProps.DESC)), true);
-            paDesc.setColor(PresetColor.TEXT_MAIN.getColor());//.setFontSize(10);
-            cvDesc.addCulledPanel(paDesc, false);
-
-            PanelVScrollBar paDescScroll = new PanelVScrollBar(new GuiTransform(GuiAlign.quickAnchor(GuiAlign.TOP_CENTER, GuiAlign.BOTTOM_CENTER), new GuiPadding(-16, 0, 8, 0), 0));
-            cvInner.addPanel(paDescScroll);
-            cvDesc.setScrollDriverY(paDescScroll);
-            paDescScroll.setEnabled(cvDesc.getScrollBounds().getHeight() > 0);
+        } else {
+            refreshDescPanel(false);
         }
 
-        //if(quest.getTasks().size() > 0)
+        // if(quest.getTasks().size() > 0)
         {
-            btnDetect = new PanelButton(new GuiTransform(new Vector4f(0.5F, 1F, 1F, 1F), new GuiPadding(8, -16, 0, 0), 0), 7, QuestTranslation.translate("betterquesting.btn.detect_submit"));
+            btnDetect = new PanelButton(
+                    new GuiTransform(new Vector4f(0.5F, 1F, 1F, 1F), new GuiPadding(8, -16, 0, 0), 0),
+                    7,
+                    QuestTranslation.translate("betterquesting.btn.detect_submit"));
             btnDetect.setActive(false);
             cvInner.addPanel(btnDetect);
 
@@ -187,23 +198,21 @@ public class GuiQuest extends GuiScreenCanvas implements IPEventListener, INeeds
         ls0.setParent(cvInner.getTransform());
         IGuiRect le0 = new GuiTransform(GuiAlign.BOTTOM_CENTER, 0, 0, 0, 0, 0);
         le0.setParent(cvInner.getTransform());
-        PanelLine paLine0 = new PanelLine(ls0, le0, PresetLine.GUI_DIVIDER.getLine(), 1, PresetColor.GUI_DIVIDER.getColor(), 1);
+        PanelLine paLine0 =
+                new PanelLine(ls0, le0, PresetLine.GUI_DIVIDER.getLine(), 1, PresetColor.GUI_DIVIDER.getColor(), 1);
         cvInner.addPanel(paLine0);
     }
 
     @Override
-    public void refreshGui()
-    {
+    public void refreshGui() {
         this.refreshTaskPanel();
         this.refreshRewardPanel();
         this.updateButtons();
     }
 
     @Override
-    public boolean onMouseClick(int mx, int my, int click)
-    {
-        if(super.onMouseClick(mx, my, click))
-        {
+    public boolean onMouseClick(int mx, int my, int click) {
+        if (super.onMouseClick(mx, my, click)) {
             this.updateButtons();
             return true;
         }
@@ -212,32 +221,51 @@ public class GuiQuest extends GuiScreenCanvas implements IPEventListener, INeeds
     }
 
     @Override
-    public boolean onMouseScroll(int mx, int my, int scroll)
-    {
+    public boolean onMouseRelease(int mx, int my, int click) {
         try {
-            if(super.onMouseScroll(mx, my, scroll))
-            {
+            return super.onMouseRelease(mx, my, click);
+        } finally {
+            if (csReward != null) {
+                scrollPosition.setRewardScrollY(csReward.getScrollY());
+            }
+
+            if (csTask != null) {
+                scrollPosition.setTaskScrollY(csTask.getScrollY());
+            }
+
+            if (csDesc != null) {
+                scrollPosition.setDescScrollY(csDesc.getScrollY());
+            }
+        }
+    }
+
+    @Override
+    public boolean onMouseScroll(int mx, int my, int scroll) {
+        try {
+            if (super.onMouseScroll(mx, my, scroll)) {
                 this.updateButtons();
                 return true;
             }
 
             return false;
-        }finally {
-            if(csReward != null){
+        } finally {
+            if (csReward != null) {
                 scrollPosition.setRewardScrollY(csReward.getScrollY());
             }
 
-            if (csTask != null){
+            if (csTask != null) {
                 scrollPosition.setTaskScrollY(csTask.getScrollY());
+            }
+
+            if (csDesc != null) {
+                scrollPosition.setDescScrollY(csDesc.getScrollY());
             }
         }
     }
 
     @Override
-    public boolean onKeyTyped(char c, int keycode)
-    {
-        if(super.onKeyTyped(c, keycode))
-        {
+    public boolean onKeyTyped(char c, int keycode) {
+        if (super.onKeyTyped(c, keycode)) {
             this.updateButtons();
             return true;
         }
@@ -246,43 +274,37 @@ public class GuiQuest extends GuiScreenCanvas implements IPEventListener, INeeds
     }
 
     @Override
-    public void onPanelEvent(PanelEvent event)
-    {
-        if(event instanceof PEventButton)
-        {
-            onButtonPress((PEventButton)event);
+    public void onPanelEvent(PanelEvent event) {
+        if (event instanceof PEventButton) {
+            onButtonPress((PEventButton) event);
         }
     }
 
-    private void onButtonPress(PEventButton event)
-    {
+    private void onButtonPress(PEventButton event) {
         IPanelButton btn = event.getButton();
 
-        if(btn.getButtonID() == 0) // Exit
+        if (btn.getButtonID() == 0) // Exit
         {
             mc.displayGuiScreen(this.parent);
-        } else if(btn.getButtonID() == 1) // Edit
+        } else if (btn.getButtonID() == 1) // Edit
         {
-            //mc.displayGuiScreen(new GuiQuestEditor(this, quest));
+            // mc.displayGuiScreen(new GuiQuestEditor(this, quest));
             mc.displayGuiScreen(new betterquesting.client.gui2.editors.GuiQuestEditor(this, questID));
-        } else if(btn.getButtonID() == 6) // Reward claim
+        } else if (btn.getButtonID() == 6) // Reward claim
         {
-            NetQuestAction.requestClaim(new int[]{questID});
-        } else if(btn.getButtonID() == 7) // Task detect/submit
+            NetQuestAction.requestClaim(new int[] {questID});
+        } else if (btn.getButtonID() == 7) // Task detect/submit
         {
-            NetQuestAction.requestDetect(new int[]{questID});
+            NetQuestAction.requestDetect(new int[] {questID});
         }
     }
 
-    private void refreshRewardPanel()
-    {
-        if(pnReward != null)
-        {
+    private void refreshRewardPanel() {
+        if (pnReward != null) {
             cvInner.removePanel(pnReward);
         }
 
-        if(rectReward == null)
-        {
+        if (rectReward == null) {
             this.initPanel();
             return;
         }
@@ -294,37 +316,50 @@ public class GuiQuest extends GuiScreenCanvas implements IPEventListener, INeeds
         csReward = new CanvasScrolling(new GuiTransform(GuiAlign.FULL_BOX, new GuiPadding(0, 0, 8, 0), 0));
         pnReward.addPanel(csReward);
 
-        PanelVScrollBar scList = new PanelVScrollBar(new GuiTransform(GuiAlign.RIGHT_EDGE, new GuiPadding(-8, 0, 0, 0), 0));
+        PanelVScrollBar scList =
+                new PanelVScrollBar(new GuiTransform(GuiAlign.RIGHT_EDGE, new GuiPadding(-8, 0, 0, 0), 0));
         pnReward.addPanel(scList);
         csReward.setScrollDriverY(scList);
 
         for (DBEntry<IReward> entry : quest.getRewards().getEntries()) {
             IReward rew = entry.getValue();
 
-            PanelTextBox titleReward = new PanelTextBox(new GuiTransform(new Vector4f(), 0, yOffset, rectReward.getWidth(), 12, 0), QuestTranslation.translate(rew.getUnlocalisedName()));
+            PanelTextBox titleReward = new PanelTextBox(
+                    new GuiTransform(new Vector4f(), 0, yOffset, rectReward.getWidth(), 12, 0),
+                    QuestTranslation.translate(rew.getUnlocalisedName()));
             titleReward.setColor(PresetColor.TEXT_HEADER.getColor()).setAlignment(1);
             titleReward.setEnabled(true);
             csReward.addPanel(titleReward);
             yOffset += 12;
 
-            IGuiPanel rewardGui = rew.getRewardGui(new GuiTransform(GuiAlign.FULL_BOX, 0, 0, rectReward.getWidth(), rectReward.getHeight(), 111), new DBEntry<>(questID, quest));
-            rewardGui.initPanel();
-            // Wrapping into canvas allow avoid empty space at end
-            CanvasEmpty tempCanvas = new CanvasEmpty(new GuiTransform(GuiAlign.TOP_LEFT, 0, yOffset, rectReward.getWidth(), rewardGui.getTransform().getHeight() - rewardGui.getTransform().getY(), 1));
-            csReward.addPanel(tempCanvas);
-            tempCanvas.addPanel(rewardGui);
-            yOffset += tempCanvas.getTransform().getHeight();
+            IGuiPanel rewardGui = rew.getRewardGui(
+                    new GuiTransform(GuiAlign.FULL_BOX, 0, 0, rectReward.getWidth(), rectReward.getHeight(), 111),
+                    new DBEntry<>(questID, quest));
+            if (rewardGui != null) {
+                rewardGui.initPanel();
+                // Wrapping into canvas allow avoid empty space at end
+                CanvasEmpty tempCanvas = new CanvasEmpty(new GuiTransform(
+                        GuiAlign.TOP_LEFT,
+                        0,
+                        yOffset,
+                        rectReward.getWidth(),
+                        rewardGui.getTransform().getHeight()
+                                - rewardGui.getTransform().getY(),
+                        1));
+                csReward.addPanel(tempCanvas);
+                tempCanvas.addPanel(rewardGui);
+                yOffset += tempCanvas.getTransform().getHeight();
+            }
         }
 
         csReward.setScrollY(scrollPosition.getRewardScrollY());
+        csReward.updatePanelScroll();
 
         updateButtons();
     }
 
-    private void refreshTaskPanel()
-    {
-        if(pnTask != null)
-        {
+    private void refreshTaskPanel() {
+        if (pnTask != null) {
             cvInner.removePanel(pnTask);
         }
 
@@ -334,7 +369,8 @@ public class GuiQuest extends GuiScreenCanvas implements IPEventListener, INeeds
         csTask = new CanvasScrolling(new GuiTransform(GuiAlign.FULL_BOX, new GuiPadding(0, 0, 8, 0), 0));
         pnTask.addPanel(csTask);
 
-        PanelVScrollBar scList = new PanelVScrollBar(new GuiTransform(GuiAlign.RIGHT_EDGE, new GuiPadding(-8, 0, 0, 0), 0));
+        PanelVScrollBar scList =
+                new PanelVScrollBar(new GuiTransform(GuiAlign.RIGHT_EDGE, new GuiPadding(-8, 0, 0, 0), 0));
         pnTask.addPanel(scList);
         csTask.setScrollDriverY(scList);
 
@@ -344,41 +380,83 @@ public class GuiQuest extends GuiScreenCanvas implements IPEventListener, INeeds
             ITask tsk = entries.get(i).getValue();
 
             String taskName = (i + 1) + ". " + QuestTranslation.translate(tsk.getUnlocalisedName());
-            PanelTextBox titleReward = new PanelTextBox(new GuiTransform(new Vector4f(), 0, yOffset, rectTask.getWidth(), 12, 0), taskName);
+            PanelTextBox titleReward = new PanelTextBox(
+                    new GuiTransform(new Vector4f(), 0, yOffset, rectTask.getWidth(), 12, 0), taskName);
             titleReward.setColor(PresetColor.TEXT_HEADER.getColor()).setAlignment(1);
             titleReward.setEnabled(true);
             csTask.addPanel(titleReward);
             yOffset += 10;
 
-            IGuiPanel taskGui = tsk.getTaskGui(new GuiTransform(GuiAlign.FULL_BOX, 0, 0, rectTask.getWidth(), rectTask.getHeight(), 0), new DBEntry<>(questID, quest));
-            taskGui.initPanel();
-            // Wrapping into canvas allow avoid empty space at end
-            CanvasEmpty tempCanvas = new CanvasEmpty(new GuiTransform(GuiAlign.TOP_LEFT, 0, yOffset, rectTask.getWidth(), taskGui.getTransform().getHeight() - taskGui.getTransform().getY(), 1));
-            csTask.addPanel(tempCanvas);
-            tempCanvas.addPanel(taskGui);
-            int guiHeight = tempCanvas.getTransform().getHeight();
-            yOffset += guiHeight;
-
-            //Indent from the previous
+            IGuiPanel taskGui = tsk.getTaskGui(
+                    new GuiTransform(GuiAlign.FULL_BOX, 0, 0, rectTask.getWidth(), rectTask.getHeight(), 0),
+                    new DBEntry<>(questID, quest));
+            if (taskGui != null) {
+                taskGui.initPanel();
+                // Wrapping into canvas allow avoid empty space at end
+                CanvasEmpty tempCanvas = new CanvasEmpty(new GuiTransform(
+                        GuiAlign.TOP_LEFT,
+                        0,
+                        yOffset,
+                        rectTask.getWidth(),
+                        taskGui.getTransform().getHeight()
+                                - taskGui.getTransform().getY(),
+                        1));
+                csTask.addPanel(tempCanvas);
+                tempCanvas.addPanel(taskGui);
+                int guiHeight = tempCanvas.getTransform().getHeight();
+                yOffset += guiHeight;
+            }
+            // Indent from the previous
             yOffset += 8;
         }
         csTask.setScrollY(scrollPosition.getTaskScrollY());
+        csTask.updatePanelScroll();
 
         updateButtons();
     }
 
-    private void updateButtons()
-    {
+    private void refreshDescPanel(boolean hasReward) {
+        if (hasReward) {
+            csDesc = new CanvasScrolling(
+                    new GuiTransform(new Vector4f(0F, 0F, 0.5F, 0.5F), new GuiPadding(0, 0, 16, 16), 0));
+        } else {
+            csDesc = new CanvasScrolling(new GuiTransform(GuiAlign.HALF_LEFT, new GuiPadding(0, 0, 16, 0), 0));
+        }
+        cvInner.addPanel(csDesc);
+        PanelTextBox paDesc = new PanelTextBox(
+                new GuiRectangle(0, 0, csDesc.getTransform().getWidth(), 0),
+                QuestTranslation.translate(quest.getProperty(NativeProps.DESC)),
+                true);
+        paDesc.setColor(PresetColor.TEXT_MAIN.getColor()); // .setFontSize(10);
+        csDesc.addCulledPanel(paDesc, false);
+
+        PanelVScrollBar paDescScroll;
+        if (hasReward) {
+            paDescScroll = new PanelVScrollBar(new GuiTransform(
+                    GuiAlign.quickAnchor(GuiAlign.TOP_CENTER, GuiAlign.MID_CENTER), new GuiPadding(-16, 0, 8, 16), 0));
+        } else {
+            paDescScroll = new PanelVScrollBar(new GuiTransform(
+                    GuiAlign.quickAnchor(GuiAlign.TOP_CENTER, GuiAlign.BOTTOM_CENTER),
+                    new GuiPadding(-16, 0, 8, 0),
+                    0));
+        }
+        cvInner.addPanel(paDescScroll);
+        csDesc.setScrollDriverY(paDescScroll);
+        paDescScroll.setEnabled(csDesc.getScrollBounds().getHeight() > 0);
+
+        csDesc.setScrollY(scrollPosition.getDescScrollY());
+        csDesc.updatePanelScroll();
+    }
+
+    private void updateButtons() {
         Minecraft mc = Minecraft.getMinecraft();
 
-        if(btnClaim != null)
-        {
+        if (btnClaim != null) {
             // Claim button state
             btnClaim.setActive(quest.getRewards().size() > 0 && quest.canClaim(mc.thePlayer));
         }
 
-        if(btnDetect != null)
-        {
+        if (btnDetect != null) {
             // Detect/submit button state
             btnDetect.setActive(quest.canSubmit(mc.thePlayer));
         }

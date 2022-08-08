@@ -52,6 +52,12 @@ betterquesting.btn.icon=图标
 betterquesting.btn.claim_all=领取所有奖励
 betterquesting.btn.zoom_fit=缩放至适应屏幕
 betterquesting.btn.lock_tray=锁定弹出栏
+betterquesting.btn.view_mode=浏览模式
+betterquesting.btn.view_mode_btn=浏览模式按钮
+betterquesting.btn.always_draw_implicit=始终显示隐藏前置任务
+betterquesting.btn.prereq_visbility.normal=默认
+betterquesting.btn.prereq_visbility.implicit=除悬停或按住Shift时，其余隐藏
+betterquesting.btn.prereq_visbility.hidden=始终隐藏
 
 betterquesting.home.exit=退出
 betterquesting.home.quests=任务
@@ -71,18 +77,18 @@ betterquesting.gui.remaining_lives=剩余生命: %s
 betterquesting.gui.full_lives=生命已满
 betterquesting.gui.closing_warning=你确定要关闭任务编辑菜单？
 betterquesting.gui.closing_confirm=本次修改的数据可能会丢失！
-betterquesting.gui.claim_all_warning=您确定要索取所有奖励吗？
-betterquesting.gui.claim_all_confirm=如果库存已满，这里可能有很多物品会掉到地上！
+betterquesting.gui.claim_all_warning=你确定要领取所有奖励吗？
+betterquesting.gui.claim_all_confirm=如果你的物品栏已满，可能会有很多物品掉到地上!
 betterquesting.gui.key=键位名称
 betterquesting.gui.no_key=无效键位
 betterquesting.gui.duplicate_key=键位冲突
-betterquesting.gui.yes_always=是的，总是
+betterquesting.gui.yes_always=总是
 
 betterquesting.tooltip.tasks_complete=%s/%s 已达成
 betterquesting.tooltip.complete=已达成
 betterquesting.tooltip.incomplete=未达成
 betterquesting.tooltip.rewards_pending=未领取奖励
-betterquesting.tooltip.repeatable=可以重复
+betterquesting.tooltip.repeatable=可重复
 betterquesting.tooltip.requires=前置任务:
 betterquesting.tooltip.shift_advanced=按住shift显示信息
 betterquesting.tooltip.reset_time=重置冷却: %s
@@ -94,8 +100,10 @@ betterquesting.tooltip.quest_logic=任务逻辑: %s
 betterquesting.tooltip.simultaneous=同步任务: %s
 betterquesting.tooltip.auto_claim=自动领取: %s
 betterquesting.tooltip.repeat=重置任务: %s
-betterquesting.tooltip.repeat_with_edit_mode=启用编辑模式，可重复的任务不会重置
+betterquesting.tooltip.repeat_with_edit_mode=编辑模式已启用，可重复任务不会重置
 betterquesting.tooltip.update_quests=更新可用!%n§7新任务线版本可用.%n单击此处可安装并迁移进度.
+betterquesting.tooltip.cycle.true=点击禁用
+betterquesting.tooltip.cycle.false=点击启用
 
 betterquesting.notice.complete=任务完成
 betterquesting.notice.update=任务更新
@@ -118,6 +126,7 @@ item.betterquesting.extra_life.quarter.name=1/4颗心
 item.betterquesting.guide.name=入门指南
 
 tile.betterquesting.submit_station.name=提交站(OSS)
+tile.betterquesting.observation_station.name=观测站(OOS)
 
 betterquesting.btn.help1=导航
 betterquesting.btn.help2=OSS方块
@@ -170,6 +179,10 @@ betterquesting.toolbox.tool.raw.desc=打开任务书原文件JSON进行编辑.�
 betterquesting.toolbox.tool.frame.name=编辑任务图标框
 betterquesting.toolbox.tool.frame.desc=更改任务图标框样式
 
+betterquesting.cmd.check_all=由 %s 完成的所有任务:
+betterquesting.cmd.check_all.line=%d %s
+betterquesting.cmd.check.true=%s 已完成 %s
+betterquesting.cmd.check.false=%s 未完成 %s
 betterquesting.cmd.complete=完成任务 %s 给 %s
 betterquesting.cmd.default.save=任务数据保存为默认
 betterquesting.cmd.default.save2=任务数据保存到 %s
@@ -180,6 +193,7 @@ betterquesting.cmd.default.none=没有找到任务数据
 betterquesting.cmd.delete.single=删除任务 %s
 betterquesting.cmd.delete.all=删除所有任务
 betterquesting.cmd.edit=编辑模式 %s
+betterquesting.cmd.view=浏览模式 %s
 betterquesting.cmd.hardcore=极限模式 %s
 betterquesting.cmd.purge_hidden=删除 %s 隐藏任务
 
@@ -197,6 +211,9 @@ betterquesting.cmd.reset.player_all=重置所有任务对 %s
 betterquesting.cmd.reset.all_single=重置任务 '%s' 对所有玩家
 betterquesting.cmd.reset.all_all=重置所有任务对所有玩家
 betterquesting.cmd.refresh=刷新本地数据...
+
+betterquesting.cmd.cleanup_questline.confirm=这是一个危险的操作.在此之前请确认备份.再次输入此指令以开始清理.
+betterquesting.cmd.cleanup_questline.completed=已移除 %d 条目
 
 json.betterquesting.quest.name=任务数据
 jdoc.betterquesting.quest.rewards.name=任务奖励

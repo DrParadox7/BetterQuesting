@@ -20,6 +20,12 @@ import betterquesting.questing.rewards.RewardStorage;
 import betterquesting.questing.tasks.TaskStorage;
 import betterquesting.storage.PropertyContainer;
 import betterquesting.storage.QuestSettings;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.UUID;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.nbt.NBTBase;
@@ -29,163 +35,136 @@ import net.minecraft.nbt.NBTTagIntArray;
 import net.minecraft.nbt.NBTTagList;
 import org.apache.logging.log4j.Level;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.UUID;
+public class QuestInstance implements IQuest {
+    private final TaskStorage tasks = new TaskStorage();
+    private final RewardStorage rewards = new RewardStorage();
 
-public class QuestInstance implements IQuest
-{
-	private final TaskStorage tasks = new TaskStorage();
-	private final RewardStorage rewards = new RewardStorage();
-
-	private final HashMap<UUID, NBTTagCompound> completeUsers = new HashMap<>();
+    private final HashMap<UUID, NBTTagCompound> completeUsers = new HashMap<>();
     private int[] preRequisites = new int[0];
     private int[] visPreRequisites = new int[0];
 
-	private final PropertyContainer qInfo = new PropertyContainer();
+    private final PropertyContainer qInfo = new PropertyContainer();
 
-	public QuestInstance()
-	{
-		this.setupProps();
-	}
+    public QuestInstance() {
+        this.setupProps();
+    }
 
-	private void setupProps()
-	{
-		setupValue(NativeProps.NAME, "New Quest");
-		setupValue(NativeProps.DESC, "No Description");
+    private void setupProps() {
+        setupValue(NativeProps.NAME, "New Quest");
+        setupValue(NativeProps.DESC, "No Description");
 
-		setupValue(NativeProps.ICON, new BigItemStack(Items.nether_star));
+        setupValue(NativeProps.ICON, new BigItemStack(Items.nether_star));
 
-		setupValue(NativeProps.SOUND_COMPLETE);
-		setupValue(NativeProps.SOUND_UPDATE);
-		//setupValue(NativeProps.SOUND_UNLOCK);
+        setupValue(NativeProps.SOUND_COMPLETE);
+        setupValue(NativeProps.SOUND_UPDATE);
+        // setupValue(NativeProps.SOUND_UNLOCK);
 
-		setupValue(NativeProps.LOGIC_QUEST, EnumLogic.AND);
-		setupValue(NativeProps.LOGIC_TASK, EnumLogic.AND);
+        setupValue(NativeProps.LOGIC_QUEST, EnumLogic.AND);
+        setupValue(NativeProps.LOGIC_TASK, EnumLogic.AND);
 
-		setupValue(NativeProps.REPEAT_TIME, -1);
-		setupValue(NativeProps.REPEAT_REL, true);
-		setupValue(NativeProps.LOCKED_PROGRESS, false);
-		setupValue(NativeProps.AUTO_CLAIM, false);
-		setupValue(NativeProps.SILENT, false);
-		setupValue(NativeProps.MAIN, false);
-		setupValue(NativeProps.GLOBAL_SHARE, false);
-		setupValue(NativeProps.SIMULTANEOUS, false);
-		setupValue(NativeProps.VISIBILITY, EnumQuestVisibility.NORMAL);
+        setupValue(NativeProps.REPEAT_TIME, -1);
+        setupValue(NativeProps.REPEAT_REL, true);
+        setupValue(NativeProps.LOCKED_PROGRESS, false);
+        setupValue(NativeProps.AUTO_CLAIM, false);
+        setupValue(NativeProps.SILENT, false);
+        setupValue(NativeProps.MAIN, false);
+        setupValue(NativeProps.GLOBAL_SHARE, false);
+        setupValue(NativeProps.SIMULTANEOUS, false);
+        setupValue(NativeProps.VISIBILITY, EnumQuestVisibility.NORMAL);
 
-		setupValue(NativeProps.SHOW_PARENT_CONNECTION);
-	}
+        setupValue(NativeProps.SHOW_PARENT_CONNECTION);
+    }
 
-	private <T> void setupValue(IPropertyType<T> prop)
-	{
-		this.setupValue(prop, prop.getDefault());
-	}
+    private <T> void setupValue(IPropertyType<T> prop) {
+        this.setupValue(prop, prop.getDefault());
+    }
 
-	private <T> void setupValue(IPropertyType<T> prop, T def)
-	{
-		qInfo.setProperty(prop, qInfo.getProperty(prop, def));
-	}
+    private <T> void setupValue(IPropertyType<T> prop, T def) {
+        qInfo.setProperty(prop, qInfo.getProperty(prop, def));
+    }
 
-	@Override
-	public void update(EntityPlayer player)
-	{
-		UUID playerID = QuestingAPI.getQuestingUUID(player);
+    @Override
+    public void update(EntityPlayer player) {
+        UUID playerID = QuestingAPI.getQuestingUUID(player);
 
         int done = 0;
 
-        for(DBEntry<ITask> entry : tasks.getEntries())
-        {
-            if(entry.getValue().isComplete(playerID))
-            {
+        for (DBEntry<ITask> entry : tasks.getEntries()) {
+            if (entry.getValue().isComplete(playerID)) {
                 done++;
             }
         }
 
-        if(tasks.size() <= 0 || qInfo.getProperty(NativeProps.LOGIC_TASK).getResult(done, tasks.size()))
-        {
+        if (tasks.size() <= 0 || qInfo.getProperty(NativeProps.LOGIC_TASK).getResult(done, tasks.size())) {
             setComplete(playerID, System.currentTimeMillis());
-        } else if(done > 0 && qInfo.getProperty(NativeProps.SIMULTANEOUS)) // TODO: There is actually an exploit here to do with locked progression bypassing simultaneous reset conditions. Fix?
+        } else if (done > 0
+                && qInfo.getProperty(
+                        NativeProps
+                                .SIMULTANEOUS)) // TODO: There is actually an exploit here to do with locked progression
+        // bypassing simultaneous reset conditions. Fix?
         {
             resetUser(playerID, false);
         }
-	}
+    }
 
-	/**
-	 * Fired when someone clicks the detect button for this quest
-	 */
-	@Override
-	public void detect(EntityPlayer player)
-	{
-		UUID playerID = QuestingAPI.getQuestingUUID(player);
-        QuestCache qc = (QuestCache)player.getExtendedProperties(QuestCache.LOC_QUEST_CACHE.toString());
-        if(qc == null) return;
+    /**
+     * Fired when someone clicks the detect button for this quest
+     */
+    @Override
+    public void detect(EntityPlayer player) {
+        UUID playerID = QuestingAPI.getQuestingUUID(player);
+        QuestCache qc = (QuestCache) player.getExtendedProperties(QuestCache.LOC_QUEST_CACHE.toString());
+        if (qc == null) return;
         int questID = QuestDatabase.INSTANCE.getID(this);
 
-		if(isComplete(playerID) && (qInfo.getProperty(NativeProps.REPEAT_TIME) < 0 || rewards.size() <= 0))
-		{
-			return;
-		} else if(!canSubmit(player))
-		{
-			return;
-		}
+        if (isComplete(playerID) && (qInfo.getProperty(NativeProps.REPEAT_TIME) < 0 || rewards.size() <= 0)) {
+            return;
+        } else if (!canSubmit(player)) {
+            return;
+        }
 
-		if(isUnlocked(playerID) || QuestSettings.INSTANCE.getProperty(NativeProps.EDIT_MODE))
-		{
-			int done = 0;
-			boolean update = false;
+        if (isUnlocked(playerID) || QuestSettings.INSTANCE.getProperty(NativeProps.EDIT_MODE)) {
+            int done = 0;
+            boolean update = false;
 
             ParticipantInfo partInfo = new ParticipantInfo(player);
             DBEntry<IQuest> dbe = new DBEntry<>(questID, this);
 
-			for(DBEntry<ITask> entry : tasks.getEntries())
-			{
-				if(!entry.getValue().isComplete(playerID))
-				{
-					entry.getValue().detect(partInfo, dbe);
+            for (DBEntry<ITask> entry : tasks.getEntries()) {
+                if (!entry.getValue().isComplete(playerID)) {
+                    entry.getValue().detect(partInfo, dbe);
 
-					if(entry.getValue().isComplete(playerID))
-					{
-						done++;
-						update = true;
-					}
-				} else
-				{
-					done++;
-				}
-			}
-			// Note: Tasks can mark the quest dirty themselves if progress changed but hasn't fully completed.
-			if(tasks.size() <= 0 || qInfo.getProperty(NativeProps.LOGIC_TASK).getResult(done, tasks.size()))
-			{
-			    // State won't be auto updated in edit mode so we force change it here and mark it for re-sync
-				if(QuestSettings.INSTANCE.getProperty(NativeProps.EDIT_MODE)) setComplete(playerID, System.currentTimeMillis());
-				qc.markQuestDirty(questID);
-			} else if(update && qInfo.getProperty(NativeProps.SIMULTANEOUS))
-			{
-				resetUser(playerID, false);
-				qc.markQuestDirty(questID);
-			} else if(update)
-			{
-				qc.markQuestDirty(questID);
-			}
-		}
-	}
+                    if (entry.getValue().isComplete(playerID)) {
+                        done++;
+                        update = true;
+                    }
+                } else {
+                    done++;
+                }
+            }
+            // Note: Tasks can mark the quest dirty themselves if progress changed but hasn't fully completed.
+            if (tasks.size() <= 0 || qInfo.getProperty(NativeProps.LOGIC_TASK).getResult(done, tasks.size())) {
+                // State won't be auto updated in edit mode so we force change it here and mark it for re-sync
+                if (QuestSettings.INSTANCE.getProperty(NativeProps.EDIT_MODE))
+                    setComplete(playerID, System.currentTimeMillis());
+                qc.markQuestDirty(questID);
+            } else if (update && qInfo.getProperty(NativeProps.SIMULTANEOUS)) {
+                resetUser(playerID, false);
+                qc.markQuestDirty(questID);
+            } else if (update) {
+                qc.markQuestDirty(questID);
+            }
+        }
+    }
 
-	@Override
-	public boolean hasClaimed(UUID uuid)
-	{
-		if(rewards.size() <= 0) return true;
+    @Override
+    public boolean hasClaimed(UUID uuid) {
+        if (rewards.size() <= 0) return true;
 
-		synchronized(completeUsers)
-        {
-            if(qInfo.getProperty(NativeProps.GLOBAL) && !qInfo.getProperty(NativeProps.GLOBAL_SHARE))
-            {
-                for(NBTTagCompound entry : completeUsers.values())
-                {
-                    if(entry.getBoolean("claimed"))
-                    {
+        synchronized (completeUsers) {
+            if (qInfo.getProperty(NativeProps.GLOBAL) && !qInfo.getProperty(NativeProps.GLOBAL_SHARE)) {
+                for (NBTTagCompound entry : completeUsers.values()) {
+                    if (entry.getBoolean("claimed")) {
                         return true;
                     }
                 }
@@ -196,7 +175,7 @@ public class QuestInstance implements IQuest
             NBTTagCompound entry = getCompletionInfo(uuid);
             return entry != null && entry.getBoolean("claimed");
         }
-	}
+    }
 
     @Override
     public boolean canClaimBasically(EntityPlayer player) {
@@ -219,25 +198,21 @@ public class QuestInstance implements IQuest
         return true;
     }
 
-	@Override
-	public void claimReward(EntityPlayer player)
-	{
+    @Override
+    public void claimReward(EntityPlayer player) {
         int questID = QuestDatabase.INSTANCE.getID(this);
         DBEntry<IQuest> dbe = new DBEntry<>(questID, this);
-		for(DBEntry<IReward> rew : rewards.getEntries())
-		{
-			rew.getValue().claimReward(player, dbe);
-		}
+        for (DBEntry<IReward> rew : rewards.getEntries()) {
+            rew.getValue().claimReward(player, dbe);
+        }
 
-		UUID pID = QuestingAPI.getQuestingUUID(player);
-        QuestCache qc = (QuestCache)player.getExtendedProperties(QuestCache.LOC_QUEST_CACHE.toString());
+        UUID pID = QuestingAPI.getQuestingUUID(player);
+        QuestCache qc = (QuestCache) player.getExtendedProperties(QuestCache.LOC_QUEST_CACHE.toString());
 
-        synchronized(completeUsers)
-        {
+        synchronized (completeUsers) {
             NBTTagCompound entry = getCompletionInfo(pID);
 
-            if(entry == null)
-            {
+            if (entry == null) {
                 entry = new NBTTagCompound();
                 this.completeUsers.put(pID, entry);
             }
@@ -246,42 +221,37 @@ public class QuestInstance implements IQuest
             entry.setLong("timestamp", System.currentTimeMillis());
         }
 
-		if(qc != null) qc.markQuestDirty(QuestDatabase.INSTANCE.getID(this));
-	}
+        if (qc != null) qc.markQuestDirty(QuestDatabase.INSTANCE.getID(this));
+    }
 
-	@Override
-	public boolean canSubmit(EntityPlayer player)
-	{
-		if(player == null) return false;
+    @Override
+    public boolean canSubmit(EntityPlayer player) {
+        if (player == null) return false;
 
-		UUID playerID = QuestingAPI.getQuestingUUID(player);
+        UUID playerID = QuestingAPI.getQuestingUUID(player);
 
-		synchronized(completeUsers)
-        {
+        synchronized (completeUsers) {
             NBTTagCompound entry = this.getCompletionInfo(playerID);
-            if(entry == null) return true;
+            if (entry == null) return true;
 
-            if(!entry.getBoolean("claimed") && getProperty(NativeProps.REPEAT_TIME) >= 0) // Complete but repeatable
+            if (!entry.getBoolean("claimed") && getProperty(NativeProps.REPEAT_TIME) >= 0) // Complete but repeatable
             {
-                if(tasks.size() <= 0) return true;
+                if (tasks.size() <= 0) return true;
 
                 int done = 0;
 
-                for(DBEntry<ITask> tsk : tasks.getEntries())
-                {
-                    if(tsk.getValue().isComplete(playerID))
-                    {
+                for (DBEntry<ITask> tsk : tasks.getEntries()) {
+                    if (tsk.getValue().isComplete(playerID)) {
                         done += 1;
                     }
                 }
 
                 return !qInfo.getProperty(NativeProps.LOGIC_TASK).getResult(done, tasks.size());
-            } else
-            {
+            } else {
                 return false;
             }
         }
-	}
+    }
 
     @Override
     public boolean showParentConnection() {
@@ -289,36 +259,29 @@ public class QuestInstance implements IQuest
     }
 
     @Override
-	public boolean isUnlocked(UUID uuid)
-	{
-		if(preRequisites.length <= 0) return true;
+    public boolean isUnlocked(UUID uuid) {
+        if (preRequisites.length <= 0) return true;
 
-		int A = 0;
-		int B = preRequisites.length;
+        int A = 0;
+        int B = preRequisites.length;
 
-		for(DBEntry<IQuest> quest : QuestDatabase.INSTANCE.bulkLookup(getRequirements()))
-		{
-			if(quest.getValue().isComplete(uuid))
-			{
-				A++;
-			}
-		}
+        for (DBEntry<IQuest> quest : QuestDatabase.INSTANCE.bulkLookup(getRequirements())) {
+            if (quest.getValue().isComplete(uuid)) {
+                A++;
+            }
+        }
 
-		return qInfo.getProperty(NativeProps.LOGIC_QUEST).getResult(A, B);
-	}
+        return qInfo.getProperty(NativeProps.LOGIC_QUEST).getResult(A, B);
+    }
 
+    @Override
+    public void setComplete(UUID uuid, long timestamp) {
+        if (uuid == null) return;
 
-	@Override
-	public void setComplete(UUID uuid, long timestamp)
-    {
-        if(uuid == null) return;
-
-        synchronized(completeUsers)
-        {
+        synchronized (completeUsers) {
             NBTTagCompound entry = this.getCompletionInfo(uuid);
 
-            if(entry == null)
-            {
+            if (entry == null) {
                 entry = new NBTTagCompound();
                 completeUsers.put(uuid, entry);
             }
@@ -328,22 +291,19 @@ public class QuestInstance implements IQuest
         }
     }
 
-	/**
-	 * Returns true if the quest has been completed at least once
-	 */
-	@Override
-	public boolean isComplete(UUID uuid)
-	{
-		if(qInfo.getProperty(NativeProps.GLOBAL))
-		{
-			return completeUsers.size() > 0;
-		} else
-		{
-			return getCompletionInfo(uuid) != null;
-		}
-	}
+    /**
+     * Returns true if the quest has been completed at least once
+     */
+    @Override
+    public boolean isComplete(UUID uuid) {
+        if (qInfo.getProperty(NativeProps.GLOBAL)) {
+            return completeUsers.size() > 0;
+        } else {
+            return getCompletionInfo(uuid) != null;
+        }
+    }
 
-	@Override
+    @Override
     public EnumQuestState getState(EntityPlayer player) {
         UUID uuid = QuestingAPI.getQuestingUUID(player);
         if (this.isComplete(uuid)) {
@@ -358,64 +318,49 @@ public class QuestInstance implements IQuest
         }
 
         return EnumQuestState.LOCKED;
-	}
+    }
 
-	@Override
-	public NBTTagCompound getCompletionInfo(UUID uuid)
-	{
-	    synchronized(completeUsers)
-        {
+    @Override
+    public NBTTagCompound getCompletionInfo(UUID uuid) {
+        synchronized (completeUsers) {
             return completeUsers.get(uuid);
         }
-	}
+    }
 
-	@Override
-    public void setCompletionInfo(UUID uuid, NBTTagCompound nbt)
-    {
-        if(uuid == null) return;
+    @Override
+    public void setCompletionInfo(UUID uuid, NBTTagCompound nbt) {
+        if (uuid == null) return;
 
-        synchronized(completeUsers)
-        {
-            if(nbt == null)
-            {
+        synchronized (completeUsers) {
+            if (nbt == null) {
                 completeUsers.remove(uuid);
-            } else
-            {
+            } else {
                 completeUsers.put(uuid, nbt);
             }
         }
     }
 
-	/**
-	 * Resets task progress and claim status. If performing a full reset, completion status will also be erased
-	 */
-	@Override
-	public void resetUser(@Nullable UUID uuid, boolean fullReset)
-	{
-	    synchronized(completeUsers)
-        {
-            if(fullReset)
-            {
-                if(uuid == null)
-                {
+    /**
+     * Resets task progress and claim status. If performing a full reset, completion status will also be erased
+     */
+    @Override
+    public void resetUser(@Nullable UUID uuid, boolean fullReset) {
+        synchronized (completeUsers) {
+            if (fullReset) {
+                if (uuid == null) {
                     completeUsers.clear();
-                } else
-                {
+                } else {
                     completeUsers.remove(uuid);
                 }
-            } else
-            {
-                if(uuid == null)
-                {
+            } else {
+                if (uuid == null) {
                     completeUsers.forEach((key, value) -> {
                         value.setBoolean("claimed", false);
                         value.setLong("timestamp", 0);
                     });
-                } else
-                {
+                } else {
                     NBTTagCompound entry = getCompletionInfo(uuid);
-                    if(entry != null)
-                    {
+                    if (entry != null) {
                         entry.setBoolean("claimed", false);
                         entry.setLong("timestamp", 0);
                     }
@@ -424,102 +369,89 @@ public class QuestInstance implements IQuest
 
             tasks.getEntries().forEach((value) -> value.getValue().resetUser(uuid));
         }
-	}
-
-	@Override
-	public IDatabaseNBT<ITask, NBTTagList, NBTTagList> getTasks()
-	{
-		return tasks;
-	}
-
-	@Override
-	public IDatabaseNBT<IReward, NBTTagList, NBTTagList> getRewards()
-	{
-		return rewards;
-	}
-
-	@Nonnull
-	@Override
-    public int[] getRequirements()
-    {
-        return this.preRequisites;
     }
 
-    public void setRequirements(@Nonnull int[] req)
-    {
-        this.preRequisites = req;
+    @Override
+    public IDatabaseNBT<ITask, NBTTagList, NBTTagList> getTasks() {
+        return tasks;
     }
 
+    @Override
+    public IDatabaseNBT<IReward, NBTTagList, NBTTagList> getRewards() {
+        return rewards;
+    }
 
     @Nonnull
     @Override
-    public int[] getVisRequirements()
-    {
+    public int[] getRequirements() {
+        return this.preRequisites;
+    }
+
+    public void setRequirements(@Nonnull int[] req) {
+        this.preRequisites = req;
+    }
+
+    @Nonnull
+    @Override
+    public int[] getVisRequirements() {
         return this.visPreRequisites;
     }
 
-    public void setVisRequirements(@Nonnull int[] req)
-    {
+    public void setVisRequirements(@Nonnull int[] req) {
         this.visPreRequisites = req;
     }
 
-	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound jObj)
-	{
-		jObj.setTag("properties", qInfo.writeToNBT(new NBTTagCompound()));
-		jObj.setTag("tasks", tasks.writeToNBT(new NBTTagList(), null));
-		jObj.setTag("rewards", rewards.writeToNBT(new NBTTagList(), null));
-		jObj.setTag("preRequisites", new NBTTagIntArray(getRequirements()));
-		jObj.setTag("visPreRequisites", new NBTTagIntArray(getVisRequirements()));
+    @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound jObj) {
+        jObj.setTag("properties", qInfo.writeToNBT(new NBTTagCompound()));
+        jObj.setTag("tasks", tasks.writeToNBT(new NBTTagList(), null));
+        jObj.setTag("rewards", rewards.writeToNBT(new NBTTagList(), null));
+        jObj.setTag("preRequisites", new NBTTagIntArray(getRequirements()));
+        jObj.setTag("visPreRequisites", new NBTTagIntArray(getVisRequirements()));
 
-		return jObj;
-	}
+        return jObj;
+    }
 
-	@Override
-	public void readFromNBT(NBTTagCompound jObj)
-	{
-		this.qInfo.readFromNBT(jObj.getCompoundTag("properties"));
-		this.tasks.readFromNBT(jObj.getTagList("tasks", 10), false);
-		this.rewards.readFromNBT(jObj.getTagList("rewards", 10), false);
+    @Override
+    public void readFromNBT(NBTTagCompound jObj) {
+        this.qInfo.readFromNBT(jObj.getCompoundTag("properties"));
+        this.tasks.readFromNBT(jObj.getTagList("tasks", 10), false);
+        this.rewards.readFromNBT(jObj.getTagList("rewards", 10), false);
         boolean hasPreReqs = jObj.hasKey("visPreRequisites");
-        if(hasPreReqs){
+        if (hasPreReqs) {
             this.visPreRequisites = jObj.getIntArray("visPreRequisites");
         }
 
-		if(jObj.func_150299_b("preRequisites") == 11) // Native NBT
-		{
-		    setRequirements(jObj.getIntArray("preRequisites"));
-            if(!hasPreReqs){
+        if (jObj.func_150299_b("preRequisites") == 11) // Native NBT
+        {
+            setRequirements(jObj.getIntArray("preRequisites"));
+            if (!hasPreReqs) {
                 this.visPreRequisites = jObj.getIntArray("preRequisites");
             }
-		} else // Probably an NBTTagList
-		{
-			List<NBTBase> rList = NBTConverter.getTagList(jObj.getTagList("preRequisites", 4));
-			int[] req = new int[rList.size()];
-			for(int i = 0; i < rList.size(); i++)
-			{
-				NBTBase pTag = rList.get(i);
-				req[i] = pTag instanceof NBTPrimitive ? ((NBTPrimitive)pTag).func_150287_d() : -1;
-			}
-			setRequirements(req);
-            if(!hasPreReqs){
+        } else // Probably an NBTTagList
+        {
+            List<NBTBase> rList = NBTConverter.getTagList(jObj.getTagList("preRequisites", 4));
+            int[] req = new int[rList.size()];
+            for (int i = 0; i < rList.size(); i++) {
+                NBTBase pTag = rList.get(i);
+                req[i] = pTag instanceof NBTPrimitive ? ((NBTPrimitive) pTag).func_150287_d() : -1;
+            }
+            setRequirements(req);
+            if (!hasPreReqs) {
                 this.visPreRequisites = req;
             }
-		}
+        }
 
-		this.setupProps();
-	}
+        this.setupProps();
+    }
 
-	@Override
-	public NBTTagCompound writeProgressToNBT(NBTTagCompound json, @Nullable List<UUID> users)
-	{
-	    synchronized(completeUsers)
-        {
+    @Override
+    public NBTTagCompound writeProgressToNBT(NBTTagCompound json, @Nullable List<UUID> users) {
+        synchronized (completeUsers) {
             NBTTagList comJson = new NBTTagList();
-            for(Entry<UUID, NBTTagCompound> entry : completeUsers.entrySet())
-            {
-                if(entry.getValue() == null || entry.getKey() == null) continue;
-                NBTTagCompound tags = (NBTTagCompound)entry.getValue().copy();
+            for (Entry<UUID, NBTTagCompound> entry : completeUsers.entrySet()) {
+                if (entry.getValue() == null || entry.getKey() == null) continue;
+                NBTTagCompound tags = (NBTTagCompound) entry.getValue().copy();
                 tags.setString("uuid", entry.getKey().toString());
                 comJson.appendTag(tags);
             }
@@ -530,87 +462,73 @@ public class QuestInstance implements IQuest
 
             return json;
         }
-	}
+    }
 
-	@Override
-	public void readProgressFromNBT(NBTTagCompound json, boolean merge)
-	{
-	    synchronized(completeUsers)
-        {
-            if(!merge) completeUsers.clear();
+    @Override
+    public void readProgressFromNBT(NBTTagCompound json, boolean merge) {
+        synchronized (completeUsers) {
+            if (!merge) completeUsers.clear();
             NBTTagList comList = json.getTagList("completed", 10);
-            for(int i = 0; i < comList.tagCount(); i++)
-            {
-                NBTTagCompound entry = (NBTTagCompound)comList.getCompoundTagAt(i).copy();
+            for (int i = 0; i < comList.tagCount(); i++) {
+                NBTTagCompound entry =
+                        (NBTTagCompound) comList.getCompoundTagAt(i).copy();
 
-                try
-                {
+                try {
                     UUID uuid = UUID.fromString(entry.getString("uuid"));
                     completeUsers.put(uuid, entry);
-                } catch(Exception e)
-                {
+                } catch (Exception e) {
                     BetterQuesting.logger.log(Level.ERROR, "Unable to load UUID for quest", e);
                 }
             }
 
             tasks.readProgressFromNBT(json.getTagList("tasks", 10), merge);
         }
-	}
+    }
 
     @Override
-	public void setClaimed(UUID uuid, long timestamp)
-	{
-		synchronized(completeUsers)
-        {
+    public void setClaimed(UUID uuid, long timestamp) {
+        synchronized (completeUsers) {
             NBTTagCompound entry = this.getCompletionInfo(uuid);
 
-            if(entry != null)
-            {
+            if (entry != null) {
                 entry.setBoolean("claimed", true);
                 entry.setLong("timestamp", timestamp);
-            } else
-            {
+            } else {
                 entry = new NBTTagCompound();
                 entry.setBoolean("claimed", true);
                 entry.setLong("timestamp", timestamp);
                 completeUsers.put(uuid, entry);
             }
         }
-	}
+    }
 
     @Override
-    public <T> T getProperty(IPropertyType<T> prop)
-    {
+    public <T> T getProperty(IPropertyType<T> prop) {
         return qInfo.getProperty(prop);
     }
 
     @Override
-    public <T> T getProperty(IPropertyType<T> prop, T def)
-    {
+    public <T> T getProperty(IPropertyType<T> prop, T def) {
         return qInfo.getProperty(prop, def);
     }
 
     @Override
-    public boolean hasProperty(IPropertyType<?> prop)
-    {
+    public boolean hasProperty(IPropertyType<?> prop) {
         return qInfo.hasProperty(prop);
     }
 
     @Override
-    public <T> void setProperty(IPropertyType<T> prop, T value)
-    {
+    public <T> void setProperty(IPropertyType<T> prop, T value) {
         qInfo.setProperty(prop, value);
     }
 
     @Override
-    public void removeProperty(IPropertyType<?> prop)
-    {
+    public void removeProperty(IPropertyType<?> prop) {
         qInfo.removeProperty(prop);
     }
 
     @Override
-    public void removeAllProps()
-    {
+    public void removeAllProps() {
         qInfo.removeAllProps();
     }
 }
