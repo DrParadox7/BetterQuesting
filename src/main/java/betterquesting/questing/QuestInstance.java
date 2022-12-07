@@ -50,6 +50,7 @@ public class QuestInstance implements IQuest
 
 	private final HashMap<UUID, NBTTagCompound> completeUsers = new HashMap<>();
     private int[] preRequisites = new int[0];
+    private TIntObjectMap<RequirementType> prereqTypes = new TIntObjectHashMap<>();
     private int[] visPreRequisites = new int[0];
 
 	private final PropertyContainer qInfo = new PropertyContainer();
@@ -469,6 +470,22 @@ public class QuestInstance implements IQuest
         prereqTypes.retainEntries((a, b) -> Arrays.binarySearch(req, a) >= 0);
         this.preRequisites = req;
     }
+
+    @Nonnull
+    @Override
+    public RequirementType getRequirementType(int req) {
+        RequirementType type = prereqTypes.get(req);
+        return type == null ? RequirementType.NORMAL : type;
+    }
+
+    @Override
+    public void setRequirementType(int req, @Nonnull RequirementType kind) {
+        if (kind == RequirementType.NORMAL)
+            prereqTypes.remove(req);
+        else
+            prereqTypes.put(req, kind);
+    }
+
 
 
     @Nonnull

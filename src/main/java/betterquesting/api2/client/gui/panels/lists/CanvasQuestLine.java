@@ -180,7 +180,7 @@ public class CanvasQuestLine extends CanvasScrolling
                     PanelButtonQuest parBtn = questBtns.get(req.getID());
 
                     if (parBtn != null) {
-                        PanelLine prLine = new PanelLine(parBtn.getTransform(), entry.getValue().getTransform(), lineRender, main ? 8 : 4, txLineCol, 1);
+                        PanelLine prLine = new PanelLine(parBtn.getTransform(), entry.getValue().getTransform(), lineRender, main ? 8 : 4, defaultTxLineCol, 1);
                         this.addPanel(prLine);
                     }
                 }
