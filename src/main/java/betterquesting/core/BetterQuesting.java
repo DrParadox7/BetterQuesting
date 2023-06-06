@@ -3,6 +3,7 @@ package betterquesting.core;
 import betterquesting.api.placeholders.EntityPlaceholder;
 import betterquesting.api.placeholders.FluidPlaceholder;
 import betterquesting.api.placeholders.ItemPlaceholder;
+import betterquesting.api.storage.BQ_Settings;
 import betterquesting.blocks.BlockObservationStation;
 import betterquesting.blocks.BlockSubmitStation;
 import betterquesting.blocks.TileObservationStation;
@@ -142,8 +143,15 @@ public class BetterQuesting
 		if((Boolean)Launch.blackboard.get("fml.deobfuscatedEnvironment")) manager.registerCommand(new BQ_CommandDebug());
 		
 		SaveLoadHandler.INSTANCE.loadDatabases(server);
+		if (BQ_Settings.loadDefaultsOnStartup) {
+			try {
+				manager.executeCommand(server, "/bq_admin default load");
+			} catch (Exception e) {
+				logger.error("Could not load the default quest database", e);
+			}
+		}
 	}
-	
+
 	@EventHandler
 	public void serverStop(FMLServerStoppedEvent event)
 	{
