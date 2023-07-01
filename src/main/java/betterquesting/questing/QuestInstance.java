@@ -31,6 +31,7 @@ import net.minecraft.nbt.NBTTagByteArray;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagIntArray;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.Constants.NBT;
 import org.apache.logging.log4j.Level;
 
