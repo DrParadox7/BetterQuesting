@@ -210,6 +210,7 @@ public class QuestInstance implements IQuest
 
     @Override
     public boolean canClaimBasically(EntityPlayer player) {
+        if (DimensionManager.getProvider(player.dimension).getClass().getName().toLowerCase().contains("dreamworld")) return false;
         UUID pID = QuestingAPI.getQuestingUUID(player);
         NBTTagCompound entry = getCompletionInfo(pID);
 
