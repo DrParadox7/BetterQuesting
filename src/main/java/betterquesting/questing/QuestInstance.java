@@ -27,7 +27,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTBase.NBTPrimitive;
-import net.minecraft.nbt.NBTTagByteArray;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagIntArray;
 import net.minecraft.nbt.NBTTagList;
@@ -41,7 +40,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
@@ -211,7 +209,12 @@ public class QuestInstance implements IQuest
 
     @Override
     public boolean canClaimBasically(EntityPlayer player) {
-        if (DimensionManager.getProvider(player.dimension).getClass().getName().toLowerCase().contains("dreamworld")) return false;
+        try {
+            if (DimensionManager.getProvider(player.dimension).getClass().getName().toLowerCase().contains("dreamworld"))
+                return false;
+        } catch (Exception e) {
+            // no action needs to be taken, this just means the dim isn't loaded
+        }
         UUID pID = QuestingAPI.getQuestingUUID(player);
         NBTTagCompound entry = getCompletionInfo(pID);
 
