@@ -1,6 +1,7 @@
 package betterquesting.legacy.v0;
 
 import betterquesting.api.enums.EnumLogic;
+import betterquesting.api.enums.EnumQuestStyle;
 import betterquesting.api.placeholders.rewards.RewardPlaceholder;
 import betterquesting.api.placeholders.tasks.TaskPlaceholder;
 import betterquesting.api.properties.NativeProps;
@@ -113,7 +114,7 @@ public final class LegacyLoader_v0 implements ILegacyLoader
 	{
 		quest.setProperty(NativeProps.NAME, JsonHelper.GetString(json, "name", "New Quest"));
 		quest.setProperty(NativeProps.DESC, JsonHelper.GetString(json, "description", "No Description"));
-		quest.setProperty(NativeProps.MAIN, JsonHelper.GetBoolean(json, "isMain", false));
+		quest.setProperty(NativeProps.STYLE, EnumQuestStyle.valueOf(JsonHelper.GetString(json, "style", "NORM")));
 		quest.setProperty(NativeProps.SILENT, JsonHelper.GetBoolean(json, "isSilent", false));
 		quest.setProperty(NativeProps.LOCKED_PROGRESS, JsonHelper.GetBoolean(json, "lockedProgress", false));
 		quest.setProperty(NativeProps.SIMULTANEOUS, JsonHelper.GetBoolean(json, "simultaneous", false));

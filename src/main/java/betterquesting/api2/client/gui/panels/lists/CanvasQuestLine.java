@@ -3,6 +3,7 @@ package betterquesting.api2.client.gui.panels.lists;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.enums.EnumQuestState;
+import betterquesting.api.enums.EnumQuestStyle;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.IQuest.RequirementType;
@@ -132,7 +133,7 @@ public class CanvasQuestLine extends CanvasScrolling
             
             if(reqList.size() <= 0) continue;
             
-            boolean main = quest.getValue().getProperty(NativeProps.MAIN);
+            EnumQuestStyle style = quest.getValue().getProperty(NativeProps.STYLE);
             EnumQuestState qState = quest.getValue().getState(player);
             IGuiLine lineRender = null;
             IGuiColor defaultTxLineCol = null;
@@ -180,7 +181,7 @@ public class CanvasQuestLine extends CanvasScrolling
                     PanelButtonQuest parBtn = questBtns.get(req.getID());
 
                     if (parBtn != null) {
-                        PanelLine prLine = new PanelLine(parBtn.getTransform(), entry.getValue().getTransform(), lineRender, main ? 8 : 4, defaultTxLineCol, 1);
+                        PanelLine prLine = new PanelLine(parBtn.getTransform(), entry.getValue().getTransform(), lineRender, style == EnumQuestStyle.MAIN ? 8 : 4, defaultTxLineCol, 1);
                         this.addPanel(prLine);
                     }
                 }

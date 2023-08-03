@@ -1,5 +1,6 @@
 package betterquesting.api.properties;
 
+import betterquesting.api.enums.EnumQuestStyle;
 import net.minecraft.init.Items;
 import net.minecraft.util.ResourceLocation;
 import betterquesting.api.enums.EnumLogic;
@@ -22,7 +23,7 @@ public class NativeProps
 	public static final IPropertyType<String> DESC =						new PropertyTypeString(new ResourceLocation("betterquesting:desc"), "untitled.desc");
 	
 	@Deprecated
-	public static final IPropertyType<Boolean> MAIN =						new PropertyTypeBoolean(new ResourceLocation("betterquesting:isMain"), false);
+	public static final IPropertyType<EnumQuestStyle> STYLE =				new PropertyTypeEnum<>(new ResourceLocation("betterquesting:style"), EnumQuestStyle.NORM);
 	public static final IPropertyType<Boolean> GLOBAL =						new PropertyTypeBoolean(new ResourceLocation("betterquesting:isGlobal"), false);
 	public static final IPropertyType<Boolean> GLOBAL_SHARE =				new PropertyTypeBoolean(new ResourceLocation("betterquesting:globalShare"), false);
 	public static final IPropertyType<Boolean> SILENT =						new PropertyTypeBoolean(new ResourceLocation("betterquesting:isSilent"), false);

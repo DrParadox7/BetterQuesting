@@ -3,6 +3,7 @@ package betterquesting.questing;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.enums.EnumLogic;
 import betterquesting.api.enums.EnumQuestState;
+import betterquesting.api.enums.EnumQuestStyle;
 import betterquesting.api.enums.EnumQuestVisibility;
 import betterquesting.api.properties.IPropertyType;
 import betterquesting.api.properties.NativeProps;
@@ -80,7 +81,7 @@ public class QuestInstance implements IQuest
 		setupValue(NativeProps.LOCKED_PROGRESS, false);
 		setupValue(NativeProps.AUTO_CLAIM, false);
 		setupValue(NativeProps.SILENT, false);
-		setupValue(NativeProps.MAIN, false);
+		setupValue(NativeProps.STYLE, EnumQuestStyle.NORM);
 		setupValue(NativeProps.GLOBAL_SHARE, false);
 		setupValue(NativeProps.SIMULTANEOUS, false);
 		setupValue(NativeProps.VISIBILITY, EnumQuestVisibility.NORMAL);

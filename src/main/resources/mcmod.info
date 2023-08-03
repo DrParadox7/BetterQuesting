@@ -8,7 +8,7 @@
 		"mcversion": "${minecraftVersion}",
 		"url": "",
 		"updateUrl": "",
-		"authorList": ["Funwayguy, "bambam01"],
+		"authorList": ["Funwayguy","bambam01"],
 		"credits": "Thank you Patreons for all your support <3",
 		"logoFile": "title.png",
 		"screenshots": [],

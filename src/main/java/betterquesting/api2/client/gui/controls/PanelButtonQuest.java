@@ -3,6 +3,7 @@ package betterquesting.api2.client.gui.controls;
 import betterquesting.api.api.ApiReference;
 import betterquesting.api.api.QuestingAPI;
 import betterquesting.api.enums.EnumQuestState;
+import betterquesting.api.enums.EnumQuestStyle;
 import betterquesting.api.properties.NativeProps;
 import betterquesting.api.questing.IQuest;
 import betterquesting.api.questing.tasks.ITask;
@@ -31,6 +32,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static betterquesting.api.enums.EnumQuestStyle.MAIN;
+
 public class PanelButtonQuest extends PanelButtonStorage<DBEntry<IQuest>>
 {
     public final GuiRectangle rect;
@@ -45,30 +48,30 @@ public class PanelButtonQuest extends PanelButtonStorage<DBEntry<IQuest>>
         player = Minecraft.getMinecraft().thePlayer;
         EnumQuestState qState = value == null ? EnumQuestState.LOCKED : value.getValue().getState(player);
         IGuiColor txIconCol = null;
-        boolean main = value == null ? false : value.getValue().getProperty(NativeProps.MAIN);
-        boolean lock = false;
-        
+		EnumQuestStyle style = value.getValue().getProperty(NativeProps.STYLE);
+		boolean lock = false;
+
         switch(qState)
         {
             case LOCKED:
-				txFrame = main ? PresetTexture.QUEST_MAIN_0.getTexture() : PresetTexture.QUEST_NORM_0.getTexture();
+				txFrame = PresetTexture.valueOf("QUEST_" + style + "_0").getTexture();
                 txIconCol = PresetColor.QUEST_ICON_LOCKED.getColor();
                 lock = true;
                 break;
             case UNLOCKED:
-				txFrame = main ? PresetTexture.QUEST_MAIN_1.getTexture() : PresetTexture.QUEST_NORM_1.getTexture();
+				txFrame = PresetTexture.valueOf("QUEST_" + style + "_1").getTexture();
                 txIconCol = PresetColor.QUEST_ICON_UNLOCKED.getColor();
                 break;
             case UNCLAIMED:
-				txFrame = main ? PresetTexture.QUEST_MAIN_2.getTexture() : PresetTexture.QUEST_NORM_2.getTexture();
+				txFrame = PresetTexture.valueOf("QUEST_" + style + "_2").getTexture();
                 txIconCol = PresetColor.QUEST_ICON_PENDING.getColor();
                 break;
             case COMPLETED:
-				txFrame = main ? PresetTexture.QUEST_MAIN_3.getTexture() : PresetTexture.QUEST_NORM_3.getTexture();
+				txFrame = PresetTexture.valueOf("QUEST_" + style + "_3").getTexture();
                 txIconCol = PresetColor.QUEST_ICON_COMPLETE.getColor();
                 break;
 			case REPEATABLE:
-				txFrame = main ? PresetTexture.QUEST_MAIN_4.getTexture() : PresetTexture.QUEST_NORM_4.getTexture();
+				txFrame = PresetTexture.valueOf("QUEST_" + style + "_4").getTexture();
 				txIconCol = PresetColor.QUEST_ICON_REPEATABLE.getColor();
 				break;
 			default:
