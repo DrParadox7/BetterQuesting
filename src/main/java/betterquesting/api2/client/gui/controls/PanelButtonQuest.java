@@ -48,7 +48,7 @@ public class PanelButtonQuest extends PanelButtonStorage<DBEntry<IQuest>>
         player = Minecraft.getMinecraft().thePlayer;
         EnumQuestState qState = value == null ? EnumQuestState.LOCKED : value.getValue().getState(player);
         IGuiColor txIconCol = null;
-		EnumQuestStyle style = value.getValue().getProperty(NativeProps.STYLE);
+		EnumQuestStyle style = value == null ? EnumQuestStyle.NORM : value.getValue().getProperty(NativeProps.STYLE);
 		boolean lock = false;
 
         switch(qState)
